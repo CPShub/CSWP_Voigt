@@ -1,0 +1,169 @@
+function [ Kglob, Rglob ] = globalstiffness_CSWP( eltype, geo, mesh, mat, u , curtime,eps0,k0)
+% Computes and assemlbes the global stiffness Matrix and global residuals
+% vector for the cross-sectional warping problem using a hyperelastic
+% material, formulated using the first Piola-Kirchhoff-Stress
+% Input:
+    % eltype    - (Int) Element type identifier, 30 for CSWP
+    % geo       - IGA Geometry object as foound in "geometries"
+    % mesh      - Mesh object, see  "build_iga_mesh(geo)"
+    % mat       - (Struct) Containing the material properties, see "default_mat()"
+    % u         - Displacement solution vector
+    % curtime   - Current time step
+    % eps0      - (3,1) vector containing the strain prescriptors
+    % k0        - (3,1) vector containing the twist prescriptors
+% Output:
+    % Kglob     - (n,n) Matrix of global stiffness entries
+    % Rglob     - (n,1) Vector of global residual entries
+% ------------------------------------------------------------------------ 
+% Copyright (C) 2026 Tobias Henkels and Juan C. Alzate Cobo. 
+% 
+% This code is an extension and modification of the NLIGA framework 
+% originally developed by Du et al. (2020). 
+% 
+% ------------------------------------------------------------------------ 
+% CITATION: 
+% If you use this code for your research, please cite: 
+% 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
+% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
+% notation", [Journal Name], [Year]. DOI: [DOI] 
+% (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
+% framework for nonlinear isogeometric analysis", Computer Aided 
+% Geometric Design, 80, 101869, 2020. 
+% https://doi.org/10.1016/j.cagd.2020.101869 
+% ------------------------------------------------------------------------ 
+% LICENSE: 
+% This function is free software: you can redistribute it and/or modify it 
+% under the terms of the GNU General Public License as published by the 
+% Free Software Foundation, either version 3 of the License, or (at your 
+% option) any later version. (GPL-3.0-or-later) 
+% 
+% This program is distributed in the hope that it will be useful, but 
+% WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+% or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
+% for more details. 
+% ------------------------------------------------------------------------ 
+% CONTACT: 
+% - Tobias Henkels (tobias.henkels@stud.tu-darmstadt.de) 
+% - Juan C. Alzate Cobo (alzate@cps.tu-darmstadt.de) 
+% Technische Universität Darmstadt, Germany 
+% ------------------------------------------------------------------------
+
+
+
+
+
+if eltype == 30 %More element types may come in the future
+    dof = 3;
+end
+gp_x = mesh.p+1;        % number of integration points in x-direction
+gp_y = mesh.q+1;        % number of integration points in y-direction
+[gp, wgt] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and its weights
+
+ndofs = dof * mesh.nCpts;      % total dofs
+
+K = sparse(ndofs,ndofs);             % reserve stiffness matrix
+C = sparse(3,ndofs);
+B = sparse(3,ndofs);
+R = zeros(ndofs,1);               % reserve residual matrix
+Rlambda = zeros(3,1);
+Rmu = zeros(3,1);
+
+
+count = 0;
+for el = 1:mesh.nElems                % loop over elements
+    sctr = mesh.elNodeCnt(el,:);       % element control points index
+    elDoma = mesh.elDoma(el,:);        % element parametric domain
+    %elCpts = mesh.coords(sctr,:);     % coordinates of element control points
+    elCpts0 = mesh.initcoords(sctr,:); % initial coordinates of el cont points
+    nn = length(sctr);                % number of control points for each element
+    nnElem = nn*dof;                  % dof for each element
+    sctrB = zeros(1, nnElem); 
+    RE = zeros(nnElem,1);
+    for i = 1:dof
+        sctrB(i:dof:nnElem) = dof*(sctr-1) + i;  % displacement in i-th direction
+    end
+    
+    elDisp = u(sctrB);
+    elDisp = reshape(elDisp, dof, nn);
+    lambda = u(end-5:end-3);
+    mu = u(end-2:end);
+    elCpts(:,1:3)=elCpts0(:,1:3)+elDisp'; %here we actualize x+du
+    
+    for ipt = 1:size(gp,1)            % loop over integration points
+        count = count + 1;
+        pt = gp(ipt,:);      % reference parametric coordinates for each integration point
+        wt = wgt(ipt);       % weigths for each integration point
+        gauPts = parameter_gauss_mapping( elDoma, pt );   % gauss integration mapping
+        j1 = jacobian_gauss_mapping( elDoma );     % jacobian value for gauss mapping   
+        [N,ders] = nurbs_derivatives( gauPts,geo, mesh );
+        jmatrix = ders*elCpts0(:,1:dof-1); %Because the mapping is in 2D
+        j2 = det(jmatrix);
+        ders =  jmatrix \ ders;              
+        fac = j1 *j2 * wt;     
+        ders3D = zeros(3,size(elCpts,1));
+        ders3D(1:2,:) = ders;
+        e = eye(3);
+
+        % Deformed and undeformed position of the current Gauss Point in the mesh
+        x = N.*elCpts(:,1:dof)'; 
+        x = sum(x,2);
+        x0 = N.*elCpts0(:,1:dof)';
+        x0 = sum(x0,2);
+        [M,m,Theta] = GeometricalTerms(x0,x,mu,e); 
+    
+        dx_alpha = elDisp * ders3D';
+        F = def_gradient(eps0, k0, x, dx_alpha);
+        if (det(F))<0
+            warning('det(F) is negative, error')
+        end
+
+        % Retrieve PK1 material response as PK1 Stress and tangent A
+        [ pk1, A ] = material_CSWP_hyperelasticity(dof, mat, F);
+
+        EK = zeros(nnElem,nnElem);
+        EB = zeros(3,nnElem);
+        EC = zeros(3,nnElem);
+        countI=1;
+        for I=1:nn %loop over all NI and NJ --> A_JI
+            IDN = ders3D(:,I)';
+            IN = N(I);
+            for q=1:3
+                countJ=1;
+                NI = IN*e(:,q);
+                DNI = zeros(3);
+                DNI(q,:)=IDN;
+                for J=1:nn %loop over all NI and NJ --> A_JI
+                    JDN = ders3D(:,J)';
+                    JN = N(J);
+                    for p=1:3
+                        NJ = JN*e(:,p);
+                        DNJ = zeros(3);
+                        DNJ(p,:)=JDN;
+                        FJ = cross(k0,NJ)*e(:,3)'+DNJ;
+                        term1 = tensorprod(A,FJ,[3 4],[1 2]); %A:FJ
+                        EK(countI,countJ) = cross(term1*e(:,3),k0)'*NI+tensorprod(term1,DNI,"all")+NI'*(Theta*NJ); 
+                        countJ=countJ +1;
+                    end
+                end
+                countI = countI +1;
+            end
+            RE(3*I-2:3*I) = -cross(k0,pk1*e(:,3))*IN+pk1*e(:,1)*IDN(1)+pk1*e(:,2)*IDN(2)+IN*(lambda+M*mu);
+            EB(:,3*I-2:3*I) = IN*e;
+            EC(:,3*I-2:3*I) = IN*M';
+        end
+        R(sctrB) = R(sctrB) + fac*RE;
+        Rlambda = Rlambda + fac*x;
+        Rmu = Rmu + fac*m;
+
+        % assemble global stiffness
+        K(sctrB,sctrB) = K(sctrB,sctrB) + fac*EK;    
+        B(:,sctrB) = B(:,sctrB) + fac*EB;
+        C(:,sctrB) = C(:,sctrB) + fac*EC;
+    end
+end
+% Additional lagrangian terms added
+Kglob = [K, B',C';B zeros(3,6);C zeros(3,6)];
+Rglob = [R;Rlambda;Rmu];
+
+end
