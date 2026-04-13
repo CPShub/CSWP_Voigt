@@ -52,7 +52,7 @@ if (mat.index >= 10 && mat.index < 20)
     if dim == 2
         mat2.compression_modulus = 0;
     end
-    [ pk2, dtan ] = material_CWP_PK2_hyperelasticity( dim, mat2, F );
+    [ pk2, dtan ] = material_CSWP_PK2_hyperelasticity( dim, mat2, F );
 elseif (mat.index >= 110 && mat.index < 120)
     % belongs to hyperelastic materials with PK2
     mat2 = mat;
@@ -60,7 +60,7 @@ elseif (mat.index >= 110 && mat.index < 120)
         %2d case is limited to incompressibility
         mat2.compression_modulus = 0;
     end
-    [ pk2, dtan ] = material_CWP_PK2_hyperelasticity( dim, mat2, F );
+    [ pk2, dtan ] = material_CSWP_PK2_hyperelasticity( dim, mat2, F );
 elseif ( mat.index >= 20 && mat.index < 40 )        
     % belongs to plastic materials
 elseif ( mat.index >= 40 && mat.index < 60 )        

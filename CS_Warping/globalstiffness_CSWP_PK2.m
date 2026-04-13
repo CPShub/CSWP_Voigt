@@ -122,7 +122,7 @@ for el = 1:mesh.nElems                % loop over elements
         BG = zeros(6,nn,nn);
   
         for i = 1:nn
-            % Corresponds to Eq. 56 in (1)
+            % Corresponds to Eq. 52 in (1)
             BN(:,i*3-2:i*3) = [ F(1,1)*ders(1,i)     F(2,1)*ders(1,i)      F(3,1)*ders(1,i);
                 F(1,2)*ders(2,i)     F(2,2)*ders(2,i)      F(3,2)*ders(2,i);
                 N(i)*(k0(3)*F(2,3)-k0(2)*F(3,3))    N(i)*(k0(1)*F(3,3)-k0(3)*F(1,3))       N(i)*(k0(2)*F(1,3)-k0(1)*F(2,3)) ;
@@ -131,8 +131,8 @@ for el = 1:mesh.nElems                % loop over elements
                 (F(1,3)*ders(1,i) + N(i)*(k0(3)*F(2,1)-k0(2)*F(3,1)))  (F(2,3)*ders(1,i) + N(i)*(k0(1)*F(3,1)-k0(3)*F(1,1)))   (F(3,3)*ders(1,i) + N(i)*(k0(2)*F(1,1)-k0(1)*F(2,1))) ];
 
             for j=1:nn
-                % Corresponds to Eq. 60 in (1)
-                % Attention: kappa-related terms are reintroduced in term G
+                % Corresponds to Eq. 70 in (1)
+                % Attention: kappa-related terms are reintroduced later in term G
                 BG(:,i,j) = [ders(1,i)*ders(1,j);
                     ders(2,i)*ders(2,j);
                     -N(i)*N(j);                                
@@ -147,6 +147,7 @@ for el = 1:mesh.nElems                % loop over elements
         end
         
         G = zeros(nnElem);
+        % Corresponds to Eq. (71)
         for ii=1:nn
             for jj=1:nn
                 G(ii*3-2:ii*3,jj*3-2:jj*3) = eye(3)*(stress(1)*BG(1,ii,jj)+stress(2)*BG(2,ii,jj)+stress(4)*BG(4,ii,jj))...

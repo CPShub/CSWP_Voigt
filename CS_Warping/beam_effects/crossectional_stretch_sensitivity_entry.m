@@ -161,13 +161,13 @@ for el = 1:mesh.nElems                % loop over elements
             EQ = to_voigt(0.5 * (F' * dF_dq + dF_dq' * F), "strain");
  
             for i = 1:nn  %loop over all NI --> Ry_I
-                % See Eq. 73 in (1)
+                % See Eq. 85 in (1)
                 col_3 = -N(i) * (cross(dk0_dq, F(:, 3)) + cross(k0, term_a));
                 col_5 = ders(2, i) * term_a - N(i) * cross(dk0_dq, F(:, 2));
                 col_6 = ders(1, i) * term_a - N(i) * cross(dk0_dq, F(:, 1));
                 BNq(i*3-2:i*3, :) = [zeros(3, 1),zeros(3, 1),col_3,zeros(3, 1),col_5,col_6];
 
-                % Corresponds to Eq. 56 in (1)
+                % Corresponds to Eq. 52 in (1)
                 BN(:,i*3-2:i*3) = [ F(1,1)*ders(1,i)     F(2,1)*ders(1,i)      F(3,1)*ders(1,i);
                     F(1,2)*ders(2,i)     F(2,2)*ders(2,i)      F(3,2)*ders(2,i);
                     N(i)*(k0(3)*F(2,3)-k0(2)*F(3,3))    N(i)*(k0(1)*F(3,3)-k0(3)*F(1,3))       N(i)*(k0(2)*F(1,3)-k0(1)*F(2,3)) ;
@@ -176,7 +176,7 @@ for el = 1:mesh.nElems                % loop over elements
                     (F(1,3)*ders(1,i) + N(i)*(k0(3)*F(2,1)-k0(2)*F(3,1)))  (F(2,3)*ders(1,i) + N(i)*(k0(1)*F(3,1)-k0(3)*F(1,1)))   (F(3,3)*ders(1,i) + N(i)*(k0(2)*F(1,1)-k0(1)*F(2,1))) ];
 
             end
-            % See Eq. 65 in (1)
+            % See Eq. 77 in (1)
             term1 = dtan * EQ;
             term2 = BNq * pk2;
 
