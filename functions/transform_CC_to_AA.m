@@ -25,7 +25,7 @@ function [AA] = transform_CC_to_AA(F, S, CC)
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
 % the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", [Journal Name], [Year]. DOI: [DOI] 
+% notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
