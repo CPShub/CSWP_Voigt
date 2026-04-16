@@ -1,11 +1,20 @@
 # CSWP-Voigt - The Cross Sectional Warping Problem in Voigt notation 
 
-This repository accompanies the publication "The cross-sectional warping problem for hyperelastic beams: An efficient formulation in Voigt notation" [[Link to the article](#)] and provides the source code and analysis environments for the results presented therein. 
+This repository accompanies the publication [["The cross-sectional warping problem for hyperelastic beams: An efficient formulation in Voigt notation"](https://arxiv.org/abs/2604.12886)] and provides the source code and analysis environments for the results presented therein. 
 
 CSWP-Voigt is an extension and modification of the NLIGA framework originally developed by Du et al. (2020). If you intend to use this software, please give credit by citing the following articles:
 
 **Article 1 (ours)**
-> [Citation data for our publication]
+```bibtex
+@unpublished{AlzateCobo2026,
+    title = {The cross-sectional warping problem for hyperelastic beams: An efficient formulation in Voigt notation},
+    author = {Alzate Cobo, Juan C. and Henkels, Tobias and Weeger, Oliver},
+    note = {Preprint available under url},
+    year = {2026},
+    doi = {10.48550/arXiv.2604.12886},
+    url = {https://doi.org/10.48550/arXiv.2604.12886},
+}
+```
 
 **Article 2 (NLIGA Framework)**
 ```bibtex
@@ -28,10 +37,10 @@ CSWP-Voigt is an extension and modification of the NLIGA framework originally de
 CSWP-Voigt expands the functionalities provided by the NLIGA-framework to include: 
 
 * **Advanced Formulations:** Functionally equivalent hyperelastic PK1 and PK2 formulations to solve the Cross-sectional warping problem using non-linear isogeometric Finite Element Analysis.
-* **Interactive Environments:** Dedicated environments used to generate the results found in the previously mentioned publication (see `CS_Warping/analysis`).
+* **Interactive Environments:** Dedicated environments used to generate the results found in the previously mentioned publication (see `CS_Warping/results_paper`).
 * **Visualization Tools:** Tools to easily interpret and visualize the converged solutions (see `CS_Warping/visualization`).
 * **Postprocessing:** Computation of resulting beam forces, beam moments, and beam stiffnesses acting on the cross-section.
-* **Demonstration Environments:** Scenarios to showcase the different capabilities and options of the framework.
+* **Demonstration Environments:** Scenarios to showcase the different capabilities and options of the framework (see `CS_Warping/demos`).
 * **Material Models:** Multiple easily interchangeable hyperelastic material models, including Saint-Venant Kirchhoff, Mooney-Rivlin, and Neo-Hookean.
 * **Presets and Examples:** Input parameters for various geometries, material formulations, and boundary conditions (referencing NLIGA for the geometry handling).
 
@@ -156,7 +165,7 @@ For information regarding bugs, contributions, or additions related to this repo
 | Oliver Weeger | [weeger@cps.tu-darmstadt.de](mailto:weeger@cps.tu-darmstadt.de) |
 
 ### Code Development
-The core CSWP-NLIGA modules and analysis environments were developed by:
+The core CSWP-Voigt modules and analysis environments were developed by:
 * **Juan C. Alzate Cobo**
 * **Tobias Henkels**
 
