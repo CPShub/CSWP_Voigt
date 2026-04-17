@@ -2,19 +2,19 @@ function [yi] = crossectional_stretch_sensitivity_entry(geo, mesh, mat, eps0, k0
 % Compute the sensitivity of cross-sectional deformation u in relation to the
 % strain prescriptor index (iq)
 %
-% Equations reference citation (1) as well as "Numerische Methoden zur 
+% Equations reference citation (1) as well as (3): "Numerische Methoden zur 
 % Modellierung elastoplastischer Balken und ihre Anwendung auf 
 % periodische Gitterstrukturen", PhD Thesis by L. Herrnböck
 %
 % Input:
 	% geo   - Employed IGA Geometry 
 	% mesh  - Employed mesh 
-	% mat   - struct containing material parameters
+	% mat   - (Struct) containing material parameters
     % eps0  - (3,1) vector containing the strain prescriptors
     % k0    - (3,1) vector containing the twist prescriptors
-    % u     - displacement solution vector
-    % K     - stiffness matrix
-    % iq    - strain prescriptor index
+    % u     - Displacement solution vector
+    % K     - Stiffness matrix
+    % iq    - Strain prescriptor index
 % Output:
 	% yi    - (n, 1) cross-sectional stretch sensitivity vector
 % ------------------------------------------------------------------------
@@ -27,9 +27,9 @@ function [yi] = crossectional_stretch_sensitivity_entry(geo, mesh, mat, eps0, k0
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -60,12 +60,12 @@ ndofs = dof * mesh.nCpts;      % total dofs
 
 gp_x = mesh.p+1;        % number of integration points in x-direction
 gp_y = mesh.q+1;        % number of integration points in y-direction
-[gp, wgt] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and its weights
+[gp, wgt] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and their weights
 
 % Preallocate space
 R_y = zeros(ndofs, 1);
 
-% Compute derivatives of v0 and k0 -> selection vectors
+% Compute derivatives of eps0and k0 -> selection vectors
 [deps0_dq, dk0_dq] = derivatives_vk(eps0, k0, iq);
 
 % Prenotate the unit tensor
@@ -118,7 +118,7 @@ for el = 1:mesh.nElems                % loop over elements
             % PK1-Based formulation
             [ pk1, A ] = material_CSWP_hyperelasticity(dof, mat, F); 
             
-            % Equation 4.46
+            % Equation 4.46 in (3)
             term1 = tensorprod(A, (deps0_dq + cross(dk0_dq, x)) * e(:,3)', [3 4], [1 2]);
             
             R_y_partial = zeros(nnElem, 1);
@@ -147,7 +147,7 @@ for el = 1:mesh.nElems                % loop over elements
                 end
             end
         elseif (mat.index >= 110 && mat.index < 120)
-            % PK2-Formulation
+            % PK2-Formulation, as presented in (1)
             [ pk2, dtan ] = material_CSWP_PK2_hyperelasticity(dof, mat, F);
 
             % B_u^{I} for PK2
@@ -187,7 +187,7 @@ for el = 1:mesh.nElems                % loop over elements
     end
 end
 
-% Add 6 rows and columns of zeros as padding to R_y (see Eq 4.45)
+% Add 6 rows and columns of zeros as padding to R_y (see Eq 4.45 in (3))
 R_y_padded = zeros(ndofs + 6, 1);
 R_y_padded(1:ndofs, 1) = R_y;
 

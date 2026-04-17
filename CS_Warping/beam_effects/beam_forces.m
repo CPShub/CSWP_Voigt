@@ -3,10 +3,10 @@ function [n0, m0] = beam_forces(geo, mesh, mat, eps0, k0, u)
 % Input:
 	% geo   - Employed IGA Geometry 
 	% mesh  - Employed mesh 
-	% mat   - struct containing material parameters
+	% mat   - (Struct) containing material parameters
     % eps0  - (3,1) vector containing the strain prescriptors
     % k0    - (3,1) vector containing the twist prescriptors
-    % u     - displacement solution vector
+    % u     - Displacement solution vector
 % Output:
 	% n0    - (3,1) forces acting on the cross-section (in kN)
 	% m0    - (3,1) moments acting on the cross-section (in kNmm)
@@ -20,9 +20,9 @@ function [n0, m0] = beam_forces(geo, mesh, mat, eps0, k0, u)
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -49,7 +49,7 @@ function [n0, m0] = beam_forces(geo, mesh, mat, eps0, k0, u)
 n0 = zeros(1, 3);
 m0 = zeros(1, 3);
 
-% Solve beam forces and moments for each entry in v0 (-> n0) and k0 (-> m0)
+% Solve beam forces and moments for each entry in eps0(-> n0) and k0 (-> m0)
 for i = 1:6
     result = beam_forces_entry(geo, mesh, mat, eps0, k0, u, i);
     if i < 4

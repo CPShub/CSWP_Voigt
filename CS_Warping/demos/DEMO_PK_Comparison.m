@@ -1,6 +1,6 @@
 %% FOR TESTING AND DEMONSTRATION PURPOSES
 % This Demonstration Environment showcases the equivalency of both the PK1
-% and PK2 formulation of the CSWP and how both can be employed using the
+% and PK2 formulation of the CSWP and how both can be employed using this
 % implementation
 % ----------------------------------------
 % Copyright (C) 2026 Tobias Henkels and Juan C. Alzate Cobo. 
@@ -12,9 +12,9 @@
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -76,7 +76,7 @@ if full_verification_check == 1
     %   - (4-6) Uniaxial Torsion (k01 || 2 || 3)
     %   - (7) Combined Axial Loading ( eps1 && 2 && 3)
     %   - (8) Combined Torsion (k01 && 2 && 3)
-    %   - (9) Random Full loading (k01 && 2 && 3 && eps1 && 2 && 3)
+    %   - (9) "Random" Full loading (k01 && 2 && 3 && eps1 && 2 && 3)
 
     eps0s = zeros(3, 7);
     eps0s(3,:) = 1;
@@ -108,7 +108,7 @@ end
 
 
 
-% Build geometrical model
+% Build the geometrical model
 if crossectional_type == "square"
     plate =  geo_square( [0,0], 1, 0);
 elseif crossectional_type == "circle"
@@ -117,8 +117,8 @@ else
     error("No matching crossectional shape selected")
 end
 
-index_SVK_pk1 = 14; % Saint-Vernant Kirchhoff with PK1
-index_SVK_pk2 = 114; % Saint-Vernant Kirchhoff with PK2
+index_SVK_pk1 = 14; % Saint-Venant Kirchhoff with PK1
+index_SVK_pk2 = 114; % Saint-Venant Kirchhoff with PK2
 
 index_MR_pk1 = 11; % Compressible Mooney-Rivling with PK1
 index_MR_pk2 = 111; % Compressible Mooney-Rivling with PK2

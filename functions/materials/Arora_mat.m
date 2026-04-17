@@ -1,7 +1,7 @@
 function mat = Arora_mat()
 % Constructs a struct that holds basic material properties and
 % the index marker (0 by default, changed as needed for different material models)
-% This Material is adapted to be identical to the one used by Arora (see
+% This Material is adapted to be identical to the one used by Arora et al. (see
 % (1) for more information)
 % Output:
 	% mat   - (Struct) containing material index and bais properties
@@ -9,9 +9,9 @@ function mat = Arora_mat()
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -48,17 +48,10 @@ mat.mue_mat = 1.0;
 mat.lambda_mat = 1.275;
 mat.E_modulus = mat.mue_mat * (3*mat.lambda_mat + 2*mat.mue_mat) / (mat.lambda_mat + mat.mue_mat);
 mat.poissons_ratio = mat.lambda_mat / (2 * (mat.lambda_mat + mat.mue_mat));
-mat.compression_modulus = mat.lambda_mat + (2/3) * mat.mue_mat;
 
-% Plastic orthropic factors
-mat.plastic_mats = [0.672790077, 0.672790077, 0.666666667, 0, 0, 0, 0.785052599, 0.785052599, 1.012246821];
 
-% Material hardening parameters (Example values)
-mat.k = 0.01;
-mat.h = 0.002;
-
-% Plastic spin parameter
-mat.eta_spin = -500;
+% Compression Modulus / Bulk Modulus
+mat.compression_modulus = mat.E_modulus / (3*(1-2*mat.poissons_ratio));% 0 = Incompressible
 
 % Neo-Hook Parameters
 mat.NH_coef1 = mat.mue_mat / 2;

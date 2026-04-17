@@ -24,9 +24,9 @@ function [ Kglob, Rglob ] = globalstiffness_CSWP_PK2( eltype, geo, mesh, mat, u 
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -55,7 +55,7 @@ if eltype == 30 %More element types cmay come in the future
 end
 gp_x = mesh.p+1;        % number of integration points in x-direction
 gp_y = mesh.q+1;        % number of integration points in y-direction
-[gp, wgt] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and its weights
+[gp, wgt] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and their weights
 
 ndofs = dof * mesh.nCpts;      % total dofs
 

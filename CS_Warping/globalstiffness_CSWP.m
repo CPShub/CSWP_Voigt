@@ -1,13 +1,13 @@
 function [ Kglob, Rglob ] = globalstiffness_CSWP( eltype, geo, mesh, mat, u , curtime,eps0,k0)
-% Computes and assemlbes the global stiffness Matrix and global residuals
+% Computes and assemlbes the global stiffness matrix and global residuals
 % vector for the cross-sectional warping problem using a hyperelastic
 % material, formulated using the first Piola-Kirchhoff-Stress
 % Input:
     % eltype    - (Int) Element type identifier, 30 for CSWP
-    % geo       - IGA Geometry object as foound in "geometries"
+    % geo       - IGA Geometry object as found in "geometries"
     % mesh      - Mesh object, see  "build_iga_mesh(geo)"
     % mat       - (Struct) Containing the material properties, see "default_mat()"
-    % u         - Displacement solution vector
+    % u         - (Past) Displacement solution vector
     % curtime   - Current time step
     % eps0      - (3,1) vector containing the strain prescriptors
     % k0        - (3,1) vector containing the twist prescriptors
@@ -24,9 +24,9 @@ function [ Kglob, Rglob ] = globalstiffness_CSWP( eltype, geo, mesh, mat, u , cu
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -58,7 +58,7 @@ if eltype == 30 %More element types may come in the future
 end
 gp_x = mesh.p+1;        % number of integration points in x-direction
 gp_y = mesh.q+1;        % number of integration points in y-direction
-[gp, wgt] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and its weights
+[gp, wgt] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and their weights
 
 ndofs = dof * mesh.nCpts;      % total dofs
 

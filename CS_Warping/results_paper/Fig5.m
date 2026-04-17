@@ -15,9 +15,9 @@
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -59,8 +59,8 @@ crossectional_type = "square";
 % Select material modeling index -> Execute testcase for every index
 %   - PK2 Formulations (110-119)
 %   - PK1 Formulations (10-19)
-index_SVK_pk1 = 14; % Saint-Vernant Kirchhoff with PK1
-index_SVK_pk2 = 114; % Saint-Vernant Kirchhoff with PK2
+index_SVK_pk1 = 14; % Saint-Venant Kirchhoff with PK1
+index_SVK_pk2 = 114; % Saint-Venant Kirchhoff with PK2
 
 index_MR_pk1 = 11; % Compressible Mooney-Rivling with PK1
 index_MR_pk2 = 111; % Compressible Mooney-Rivling with PK2
@@ -88,7 +88,7 @@ if eps0_case == 1
     loadcase = zeros(6,l);
     loadcase(dir, :) = eps0i;
 
-    save_tables_v0 = 1;
+    save_tables_eps0= 1;
     save_tables_k03 = 0;
     x_axis_txt = 'Axial Strain \epsilon_{3}';
 elseif k0_case == 1
@@ -99,7 +99,7 @@ elseif k0_case == 1
     loadcase = zeros(6,l);
     loadcase(dir, :) = koi;
 
-    save_tables_v0 = 0;
+    save_tables_eps0= 0;
     save_tables_k03 = 1;
     x_axis_txt = 'Axial Twist \kappa_{3}';
 elseif complex_case == 1
@@ -216,8 +216,6 @@ end
 
 %% Export the data as csv with header
 
-% Beam Force over eps0(3) (For different material models)
-
 if eps0_case == 1 || k0_case == 1
     xx = loadcase(dir, :);
 elseif complex_case == 1
@@ -256,7 +254,7 @@ C66_NH_pk2 = reshape(nl_data.C0(6,6,:,6), [], 1);
 
 
 % save data tables
-if save_tables_v0 == 1
+if save_tables_eps0== 1
     T = array2table([xx', ...
         n3_SVK_pk1, n3_SVK_pk2, ...
         n3_MR_pk1, n3_MR_pk2, ...

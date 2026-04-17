@@ -11,9 +11,9 @@
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -42,8 +42,8 @@ eps0 = [0.02, 0.03, 0.06]';
 k0 = [0.01,0.02,0.1]';
 
 % Store indicees for compared material models
-index_SVK_pk1 = 14; % Saint-Vernant Kirchhoff with PK1
-index_SVK_pk2 = 114; % Saint-Vernant Kirchhoff with PK2
+index_SVK_pk1 = 14; % Saint-Venant Kirchhoff with PK1
+index_SVK_pk2 = 114; % Saint-Venant Kirchhoff with PK2
 
 indexes = [index_SVK_pk1, index_SVK_pk2];
 l = length(indexes);

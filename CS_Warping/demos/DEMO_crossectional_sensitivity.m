@@ -1,6 +1,6 @@
 %% FOR TESTING AND DEMONSTRATION PURPOSES
 % This Demonstration Environment showcases the computation of the 
-% crossectional sensitivity to the loadcase variables [eps0, k0] by
+% cross-sectional sensitivity to the strain prescriptors [eps0, k0] by
 % comparing it with a numerical approximation.
 % ----------------------------------------
 % Copyright (C) 2026 Tobias Henkels and Juan C. Alzate Cobo. 
@@ -12,9 +12,9 @@
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -38,11 +38,6 @@
 % ------------------------------------------------------------------------
 
 
-
-
-% Define the loadcase (10% axial stretch)
-% Attention: Always use upright vectors
-
 eps0 = 0; % Starting / Convergence Point
 k0 = [0,0,0]';
 y_t_integrals = zeros(1, 1);
@@ -52,6 +47,7 @@ plot_quivers = 1;
 check_convergence = 1;
 
 if check_convergence
+    % define delta eps0 to capture convergence
     deps0 = [0, 0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001];
     eps0s = eps0 + deps0;
     steps = length(eps0s);
@@ -93,12 +89,11 @@ for i = 1:steps
     K = nliga_return.k;
     u = nliga_return.u;
     
-    % Compute the crossectional sensitivity
+    % Compute the cross-sectional sensitivity
     y_t = crossectional_stretch_sensitivity(square, mesh, mat, eps0, k0, u, K);
     
-    % Compute single-value integral of y_t over area
+    % Reshape y_t
     arrowdata = reshape(y_t(:, 3),3,[])';
-    y_t_integrated = sum(arrowdata(1, :));
 
     % Store the data
     xs(:, :, i) = mesh.coords(:, [1,2,3]) + reshape(u(1:end-6), 3, [])';

@@ -9,13 +9,13 @@ function [C0_entry] = beam_stiffness_entry(geo, mesh, mat, eps0, k0, u, ip, iq, 
 % Input:
 	% geo   - Employed IGA Geometry 
 	% mesh  - Employed mesh 
-	% mat   - struct containing material parameters
+	% mat   - (Struct) containing material parameters
     % eps0  - (3,1) vector containing the strain prescriptors
     % k0    - (3,1) vector containing the twist prescriptors
-    % u     - displacement solution vector
-    % ip    - selector index (corresponds to row in C0)
-    % iq    - selector index (corresponds to col in C0)
-    % y     - crossectional stretch sensitvitiy field along stretch/curvature
+    % u     - Displacement solution vector
+    % ip    - Selector index (corresponds to row in C0)
+    % iq    - Selector index (corresponds to col in C0)
+    % y     - Cross-sectional stretch sensitivity to each strain presciptor
 % Output:
 	% C0_entry  - beam stiffness entry
 % ------------------------------------------------------------------------
@@ -28,9 +28,9 @@ function [C0_entry] = beam_stiffness_entry(geo, mesh, mat, eps0, k0, u, ip, iq, 
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -55,14 +55,14 @@ function [C0_entry] = beam_stiffness_entry(geo, mesh, mat, eps0, k0, u, ip, iq, 
 % Integration over the whole domain
 gp_x = mesh.p+1;        % number of integration points in x-direction
 gp_y = mesh.q+1;        % number of integration points in y-direction
-[gp, wgt] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and its weights
+[gp, wgt] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and their weights
 
 dof = 3;
 count = 0;
 
 C0_entry = 0; % Reserve stiffness entry value
 
-% Compute derivatives of v0 and k0 for p and q -> selection vectors
+% Compute derivatives of eps0 and k0 for p and q -> selection vectors
 [deps0_dp, dk0_dp] = derivatives_vk(eps0, k0, ip);
 [deps0_dq, dk0_dq] = derivatives_vk(eps0, k0, iq);
 
@@ -128,11 +128,11 @@ for el = 1:mesh.nElems                % loop over elements
 
             % Compute PK1 from PK2
             pk2 = to_tensor(pk2_voigt, "stress");
-            C = to_tensor(C_voigt, "-");
             pk1 = F * pk2;
 
             % Compute PK1 material tangent stiffness tensor from PK2 material
             % elasticity tensor 
+            C = to_tensor(C_voigt, "-");
             A = transform_CC_to_AA(F, pk2, C);
         end
 

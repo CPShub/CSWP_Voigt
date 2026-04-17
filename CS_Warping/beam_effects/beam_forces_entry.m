@@ -1,15 +1,15 @@
 function [n0_entry] = beam_forces_entry(geo, mesh, mat, eps0, k0, u, ip)
-% Computate a beam force entry (as outlined in "Numerische Methoden zur 
+% Compute a beam force entry (as outlined in "Numerische Methoden zur 
 % Modellierung elastoplastischer Balken und ihre Anwendung auf 
 % periodische Gitterstrukturen", PhD Thesis by L. Herrnböck)
 % Input:
 	% geo   - Employed IGA Geometry 
 	% mesh  - Employed mesh 
-	% mat   - struct containing material parameters
+	% mat   - (Struct) containing material parameters
     % eps0  - (3,1) vector containing the strain prescriptors
     % k0    - (3,1) vector containing the twist prescriptors
-    % u     - displacement solution vector
-    % ip    - selector index (corresponds to n0 in range 1:3 and m0 in range 4:6)
+    % u     - Displacement solution vector
+    % ip    - Selector index (corresponds to n0 in range 1:3 and m0 in range 4:6)
 % Output:
     % n0_entry  - (3,1) force/moment related to selector index (in kN or kNmm)
 % ------------------------------------------------------------------------
@@ -22,9 +22,9 @@ function [n0_entry] = beam_forces_entry(geo, mesh, mat, eps0, k0, u, ip)
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -50,14 +50,14 @@ function [n0_entry] = beam_forces_entry(geo, mesh, mat, eps0, k0, u, ip)
 % Integration over the whole domain
 gp_x = mesh.p+1;        % number of integration points in x-direction
 gp_y = mesh.q+1;        % number of integration points in y-direction
-[gp, wgt] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and its weights
+[gp, wgt] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and their weights
 
 dof = 3;
 count = 0;
 
 n0_entry = 0; % Reserve beam force entry value
 
-% Compute derivatives of v0 and k0 for p and q -> selection vectors
+% Compute derivatives of eps0 and k0 for p and q -> selection vectors
 [deps0_dp, dk0_dp] = derivatives_vk(eps0, k0, ip);
 
 % Prenotate the unit tensor
@@ -68,7 +68,7 @@ for el = 1:mesh.nElems                % loop over elements
     elDoma = mesh.elDoma(el,:);        % element parametric domain
     elCpts0 = mesh.initcoords(sctr,:); % initial coordinates of el cont points
     nn = length(sctr);                % number of control points for each element
-    nnElem = nn*dof;                  % dof for each element
+    nnElem = nn*dof;                  % total dof for each element
     sctrB = zeros(1, nnElem);
 
     for i = 1:dof
@@ -110,6 +110,7 @@ for el = 1:mesh.nElems                % loop over elements
             [pk2, ~] = material_CSWP_PK2_hyperelasticity(dof, mat, F);
 
             % Compute PK1 from PK2 by transforming PK2 back to matrix-form
+            % and push-forward with Def. Gradient
             pk1 = F * to_tensor(pk2, "stress");
         end
 

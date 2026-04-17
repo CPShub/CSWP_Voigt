@@ -1,6 +1,6 @@
 function [x, w] = gauss_legendre(x1, x2, n)
 %-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%
-% Calculate gauss legendre integration points and its weights
+% Calculate gauss legendre integration points and their weights
 %  Input:
 %    x1 - integration lower limit
 %    x2 - integration upper limit

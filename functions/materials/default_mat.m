@@ -1,15 +1,15 @@
 function mat = default_mat()
-% Constructs a struct that holds basic material properties and0.
+% Constructs a struct that holds basic material properties and
 % the index marker (0 by default, changed as needed for different material models)
 % Output:
-	% mat   - (Struct) containing material index and bais properties
+	% mat   - (Struct) containing material index and properties
 % ------------------------------------------------------------------------ 
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -34,7 +34,7 @@ function mat = default_mat()
 
 % Relevant material properties are:
 %   lambda_mat:     121         % GPa
-%   mu_mat:         90          % GPa
+%   mue_mat:         90          % GPa
 %   E_modulus:      208.1592    % GPa
 %   Yield Stress:   250         % MPa
 %   (Index):        0
@@ -47,18 +47,9 @@ mat.E_modulus = mat.mue_mat * (3*mat.lambda_mat + 2*mat.mue_mat)/(mat.lambda_mat
 mat.poissons_ratio = (mat.lambda_mat)/ (2*mat.lambda_mat + 2*mat.mue_mat); % GPa
 mat.yield_stress = 0.250;     % GPa
 
-% Plastic orthropic factors
-mat.plastic_mats = [0.672790077, 0.672790077, 0.666666667, 0, 0, 0, 0.785052599, 0.785052599, 1.012246821];
+% Compression Modulus / Bulk Modulus
+mat.compression_modulus = mat.E_modulus / (3*(1-2*mat.poissons_ratio));% 0 = Incompressible
 
-% Material hardening parameters (Example values)
-mat.k = 0.01;
-mat.h = 0.002;
-
-% Compression Parameters
-mat.compression_modulus = mat.lambda_mat + 2/3 * mat.mue_mat;
-
-% Plastic spin parameter
-mat.eta_spin = -500; % From Vinayak 2023
 
 % Neo-Hook Parameters
 mat.NH_coef1 = mat.mue_mat / 2;

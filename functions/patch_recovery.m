@@ -17,12 +17,12 @@ function cstrs = patch_recovery( gstrs, mesh, geo)
 if mesh.dim == 2            % two dimensional
     gp_x = mesh.p+1;        % number of integration points in x-direction
     gp_y = mesh.q+1;        % number of integration points in y-direction
-    [gp, ~] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and its weights
+    [gp, ~] = gauss_quadrature(gp_x, gp_y);   % calculate integration points and their weights
 elseif mesh.dim == 3   % three dimensional
     gp_x = mesh.p+1;        % number of integration points in x-direction
     gp_y = mesh.q+1;        % number of integration points in y-direction
     gp_z = mesh.k+1;        % number of integration points in y-direction
-    [gp, ~] = gauss_quadrature(gp_x, gp_y, gp_z);   % calculate integration points and its weights
+    [gp, ~] = gauss_quadrature(gp_x, gp_y, gp_z);   % calculate integration points and their weights
 end
 N = zeros(size(gstrs,1), mesh.nCpts ); 
 count = 0;

@@ -1,6 +1,6 @@
 function [Q, W] = gauss_quadrature(noGpsX, noGpsY, noGpsZ)
 %-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%
-%  Calculate one two and three dimensional gauss integration points and its weights
+%  Calculate one two and three dimensional gauss integration points and their weights
 %  Input:
 %    noGpsX - number of gauss points in x direction
 %    noGpsY - number of gauss points in y direction

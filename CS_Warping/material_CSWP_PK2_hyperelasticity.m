@@ -1,5 +1,5 @@
 function [pk2, dtan] = material_CSWP_PK2_hyperelasticity(dim, mat, F)
-% General Framework for different material Models using PK2 Formulation
+% General Framework for different material models using PK2 Formulation
 % Returns are in Voigt-Notation and follow engineering shear convention
 % Input:
     % dim   - (2 or 3) Dimensionality of the mesh
@@ -7,11 +7,11 @@ function [pk2, dtan] = material_CSWP_PK2_hyperelasticity(dim, mat, F)
     % F     - (3,3) deformation gradient
 % Output:
     % For dim == 2
-        % pk1   - (3,1) Second Piola–Kirchhoff stress (Voigt form)
-        % A     - (3,3) Material Elasticity Tensor (Voigt form, engineering shear)
+        % pk2   - (3,1) Second Piola–Kirchhoff stress (Voigt form)
+        % dtan  - (3,3) Material Elasticity Tensor (Voigt form, engineering shear)
     % For dim == 3
-        % pk1   - (6,1) Second Piola–Kirchhoff stress (Voigt form)
-        % A     - (6,6) Material Elasticity Tensor (Voigt form, engineering shear)
+        % pk2   - (6,1) Second Piola–Kirchhoff stress (Voigt form)
+        % dtan  - (6,6) Material Elasticity Tensor (Voigt form, engineering shear)
 % Info:
 % Index | Name          | Energy-Formulations for the compressible 3d models
 %   110 | Neo-Hook      | W(J1,J3) = A10*(J1-3)+K/2*(J3-1)^2
@@ -28,9 +28,9 @@ function [pk2, dtan] = material_CSWP_PK2_hyperelasticity(dim, mat, F)
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 

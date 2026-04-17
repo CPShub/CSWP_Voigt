@@ -9,9 +9,9 @@ function mat = Herrnbock_mat()
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -51,19 +51,9 @@ mat.E_modulus = 206.768;        % GPa
 mat.lambda_mat = mat.mue_mat * (mat.E_modulus - 2*mat.mue_mat)/(3*mat.mue_mat - mat.E_modulus);
 mat.poissons_ratio = mat.E_modulus / (2 * mat.mue_mat) - 1;
 
+% Compression Modulus / Bulk Modulus
+mat.compression_modulus = mat.E_modulus / (3*(1-2*mat.poissons_ratio));% 0 = Incompressible
 
-% Plastic orthropic factors
-mat.plastic_mats = [0.672790077, 0.672790077, 0.666666667, 0, 0, 0, 0.785052599, 0.785052599, 1.012246821];
-
-% Material hardening parameters (Example values)
-mat.k = 0.01;
-mat.h = 0.002;
-
-% Compression Parameters
-mat.compression_modulus = mat.lambda_mat * 2/3 * mat.mue_mat;% 0 = Incompressible
-
-% Plastic spin parameter
-mat.eta_spin = -500;
 
 % Neo-Hook Parameters
 mat.NH_coef1 = mat.mue_mat / 2;

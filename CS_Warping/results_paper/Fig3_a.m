@@ -10,9 +10,9 @@
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -64,15 +64,11 @@ dbc = [];        % dbc = [node index, node dof, prescribed displacement]
 tbc = [];
 tol = 1e-8;
 
-% Determine material properties
-% Note that definition 'mat' is different for nonlinear materials, the first number
-% is always the index to define material categories
-% index - [20-40) - elastoplastic material
-
+% Define material indicees
 dof = 3;
 eltype = 30;
-index_SVK_pk1 = 14; % Saint-Vernant Kirchhoff with PK1
-index_SVK_pk2 = 114; % Saint-Vernant Kirchhoff with PK2
+index_SVK_pk1 = 14; % Saint-Venant Kirchhoff with PK1
+index_SVK_pk2 = 114; % Saint-Venant Kirchhoff with PK2
 
 index_MR_pk1 = 11; % Compressible Mooney-Rivling with PK1
 index_MR_pk2 = 111; % Compressible Mooney-Rivling with PK2

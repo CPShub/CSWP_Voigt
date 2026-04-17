@@ -2,18 +2,18 @@ function [y] = crossectional_stretch_sensitivity(geo, mesh, mat, eps0, k0, u, K)
 % Compute the sensitivity of cross-sectional deformation u in relation to the
 % 6 strain prescriptors
 %
-% Equations reference "Numerische Methoden zur 
+% Equations reference citation (3): "Numerische Methoden zur 
 % Modellierung elastoplastischer Balken und ihre Anwendung auf 
 % periodische Gitterstrukturen", PhD Thesis by L. Herrnböck
 %
 % Input:
 	% geo   - Employed IGA Geometry 
 	% mesh  - Employed mesh 
-	% mat   - struct containing material parameters
+	% mat   - (Struct) containing material parameters
     % eps0  - (3,1) vector containing the strain prescriptors
     % k0    - (3,1) vector containing the twist prescriptors
-    % u     - displacement solution vector
-    % K     - stiffness matrix
+    % u     - Displacement solution vector
+    % K     - Stiffness matrix
 % Output:
 	% y    - (n,6) cross-sectional stretch sensitivity matrix
 % ------------------------------------------------------------------------
@@ -26,9 +26,9 @@ function [y] = crossectional_stretch_sensitivity(geo, mesh, mat, eps0, k0, u, K)
 % CITATION: 
 % If you use this code for your research, please cite: 
 % 
-% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "Efficient formulation of 
-% the cross-sectional warping problem of hyperelastic 3D beams in Voigt 
-% notation", DOI: 10.48550/arXiv.2604.12886 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
 % Geometric Design, 80, 101869, 2020. 
@@ -51,8 +51,8 @@ function [y] = crossectional_stretch_sensitivity(geo, mesh, mat, eps0, k0, u, K)
 % Technische Universität Darmstadt, Germany 
 % ------------------------------------------------------------------------
 
-% Solver for crossectional stretch senstivity following
-% Herrnboeck Equations 4.43 to 4.46
+% Solver for crossectional stretch senstivity following (3) 
+% Equations 4.43 to 4.46
 
 dof = 3;
 ndofs = dof * mesh.nCpts;      % total dofs
