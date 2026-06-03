@@ -126,7 +126,7 @@ while curtime ~= 1    % get to the end
         if eltype == 30 
             if mat.index >= 10 && mat.index < 20
                 % Elastic CSWP with PK1
-                [ k, r ] = globalstiffness_CSWP( eltype, geo, mesh, mat, u, curtime,eps0,k0 );
+                [ k, r ] = globalstiffness_CSWP_PK1_Arora( eltype, geo, mesh, mat, u, curtime,eps0,k0 );
             elseif mat.index >= 110 && mat.index < 120
                 % Elastic CSWP with PK2
                 [ k, r ] = globalstiffness_CSWP_PK2( eltype, geo, mesh, mat, u , curtime,eps0,k0);
