@@ -68,6 +68,7 @@ Rmu = zeros(3,1);
 eps0 = curtime*eps0;
 k0 = curtime*k0;
 
+e = eye(3);
 %This is the skew symmetric cross-product matrix
 k0x = [    0   -k0(3)   k0(2);
            k0(3)     0   -k0(1);
@@ -106,7 +107,6 @@ for el = 1:mesh.nElems                % loop over elements
         fac = j1 *j2 * wt;        
         ders3D = zeros(3,size(elCpts,1));
         ders3D(1:2,:) = ders;
-        e = eye(3);
         x = N.*elCpts(:,1:dof)';
         x = sum(x,2);
         x0 = N.*elCpts0(:,1:dof)';
