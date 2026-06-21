@@ -130,6 +130,7 @@ while curtime ~= 1    % get to the end
             elseif mat.index >= 110 && mat.index < 120
                 % Elastic CSWP with PK2
                 [ k, r ] = globalstiffness_CSWP_PK2( eltype, geo, mesh, mat, u , curtime,eps0,k0);
+                %[ k, r] = globalstiffness_CSWP_PK2_meshwise( eltype, geo, mesh, mat, u , curtime,eps0,k0);
             end
         % belongs to hyperelastic materials
         elseif ( mat.index >= 10 && mat.index < 20 )            
@@ -209,7 +210,7 @@ while curtime ~= 1    % get to the end
     else                           % not converged
         if reit <= maxreit         % refine time interval and continue iterating
             curtime = curtime - timeInterval;   % recover current time step
-            init_vina(ngp) ;                    % Reset the memory-variables ?
+            %init_vina(ngp) ;                    % Reset the memory-variables ?
             timeInterval = timeInterval/4;      % refine time interval
             reit = reit+1;         % increase reduction index
             u = cu;                % recover current displacement from last converged displacement

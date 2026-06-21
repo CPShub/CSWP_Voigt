@@ -66,8 +66,8 @@ use_vertical_divide = 1;
 
 % Select cross-section, loading case and visualized data
 %cs_type = "circle";
-cs_type = "square";
-%cs_type = "circle_square";
+%cs_type = "square";
+cs_type = "circle_square";
 
 loading_case = "full"; % Multi-Axial Loading case
 %loading_case = "simple";% Uni-Axial X-Shear
@@ -215,8 +215,12 @@ shapes = ["square", "square", "^", "^", "o", "o"];
 
 if recompute_files == 1
     for j = 1:2
-        mesh = build_iga_mesh( plate );
-        curve = extract_iga_boundary(mesh);
+        if cs_type == "circle_square"
+            % execute custom multi-mesh assembly
+            mesh = build_omesh(plate);
+        else
+            mesh = build_iga_mesh( plate );
+        end
         
         % Retrieve material properties
         mat = default_mat();

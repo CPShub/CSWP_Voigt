@@ -38,10 +38,10 @@
 
 %% Options
 
-plot_K_matricees = 0;
+plot_K_matricees = 1;
 plot_mesh_computation_time = 0;
 plot_K_computation_comparison = 0;
-plot_K_computation_comparison_single = 1;
+plot_K_computation_comparison_single = 0;
 %%
 
 
