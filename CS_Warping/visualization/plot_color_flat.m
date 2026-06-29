@@ -154,7 +154,7 @@ for j = 2:length(vmesh.vertices)
     end
 
     % Limit the cdata to [-limi, limi] range
-    cdata = min(max(cdata,-limi),limi);
+    %cdata = min(max(cdata,-limi),limi);
 
 
     % Add the visualized data

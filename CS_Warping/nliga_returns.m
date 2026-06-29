@@ -97,7 +97,7 @@ cnit = [];            % record the iterative steps
 if ((mat.index >= 10 && mat.index < 20) || (mat.index >= 110 && mat.index < 120))            
     % % output initial undeformed geometries
     if eltype ==30 % CSWP-Element
-        output_visual_mesh_CSWP( fout, mat, geo, mesh, u, step, curtime );
+        output_visual_mesh_CSWP( fout, mat, geo, mesh, u, step, curtime, eps0, k0 );
     elseif mesh.dim == 2 % Plane Element
         output_visual_mesh2d( fout, mat, geo, mesh, u, step, curtime );
     elseif mesh.dim == 3 % Block Element
@@ -196,7 +196,7 @@ while curtime ~= 1    % get to the end
             % output visualized mesh file with 'filename'
             %if mesh.dim == 2 && eltype == 30
             if eltype == 30
-                output_visual_mesh_CSWP( fout, mat, geo, mesh, u, step, curtime );
+                output_visual_mesh_CSWP( fout, mat, geo, mesh, u, step, curtime, eps0, k0);
             elseif mesh.dim == 2 
                 output_visual_mesh2d( fout, mat, geo, mesh, u, step, curtime );
             elseif mesh.dim == 3

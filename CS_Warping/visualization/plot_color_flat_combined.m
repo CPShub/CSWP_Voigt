@@ -230,10 +230,10 @@ for j = 2:length(trims(1).vertices)
     end
     
     % Handel Singularity of the triangular elements (i.e. circle center)
-    if cdata_mmin ~= 0 && cdata_mmax ~= 0
-        mmin = cdata_mmin;
-        mmax = cdata_mmax;
-    end
+    %if cdata_mmin ~= 0 && cdata_mmax ~= 0
+    %    mmin = cdata_mmin;
+    %    mmax = cdata_mmax;
+    %end
 
     mmid = round((mmax - mmin) / 2 + mmin);
 
