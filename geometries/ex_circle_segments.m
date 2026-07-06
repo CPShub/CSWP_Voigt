@@ -225,6 +225,40 @@ if new_school
     plot_color_flat_combined(8, "trash.msh", "trash.msh", {});
 
     %% Visualization
+    % VMS Visualiozation
+    vmesh = read_visual_mesh("trash.msh");
+
+    % Extract VMS
+    vms = von_mises(vmesh.stress);
+
+    tri = delaunay(vmesh.nodalpts(:,1), vmesh.nodalpts(:,2));
+    figure;
+    patch('Vertices', vmesh.nodalpts(:,1:2), 'Faces', tri, ...
+          'FaceVertexCData', vms, ...
+          'FaceColor', 'interp', ...   
+          'EdgeColor', 'none');        
+    
+    % make the Colorbar as blue-white-red
+    clim([min(vms), max(vms)]); 
+    colormap(bluewhitered(256)); 
+    colorbar;
+    grid on
+    hold on
+    scatter(vmesh.nodalpts(:, 1), vmesh.nodalpts(:, 2), 20, vms, "filled", "o", "MarkerEdgeColor", "black");
+    axis equal
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     plot_u_over_time(multi_mesh, {}, nliga_return.u, "", {});
 
     % Nodes
@@ -238,5 +272,4 @@ if new_school
         text(multi_mesh.coords(rr, 1), multi_mesh.coords(rr, 2), sprintf(' %d', rr), ...
             'Color', "blue", 'FontSize', 9, 'VerticalAlignment', 'bottom');
     end
-    
 end

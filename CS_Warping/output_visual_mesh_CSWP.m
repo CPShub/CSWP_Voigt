@@ -91,7 +91,7 @@ vms = zeros(num_meshes * numpts,1);
 j = 0;
 for m = 1:num_meshes
     sub_mesh = mesh_cell{1, m};
-    sub_geo = geo{1,5};
+    %sub_geo = geo{1,5};
 
     elem_index = find_point_span( sub_mesh, polygon.tripts );
     
@@ -122,10 +122,10 @@ for m = 1:num_meshes
 
         % TODO: Remove after testing
         [N,ders] = nurbs_derivatives( [xi, eta],geo, mesh );
-        [N_sub, ders_sub] = nurbs_derivatives( [xi, eta], sub_geo, sub_mesh);
+        %[N_sub, ders_sub] = nurbs_derivatives( [xi, eta], sub_geo, sub_mesh);
         
-        ders = ders_sub;
-        N = N_sub;
+        %ders = ders_sub;
+        %N = N_sub;
 
         jmatrix = ders*exyz(:,1:2); %Because the mapping is in 2D
         ders =  jmatrix \ ders;      
