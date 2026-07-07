@@ -222,16 +222,18 @@ while curtime ~= 1    % get to the end
     end
 end
 
+% Determine beam sensitivities
+[y] = crossectional_stretch_sensitivity(geo, mesh, mat, eps0, k0, u, k);
+
 % Determination of Beam Stiffness
 C0 = beam_stiffness(geo, mesh, mat, eps0, k0, u, k);
-
     
 % Determination of Beam Forces
 [n0, m0] = beam_forces(geo, mesh, mat, eps0, k0, u);
 
 % TODO: remove after testing
 % Novel determination of beam forces
-%[n0_new, m0_new, C0_new] = beam_effects_new(geo, mesh, mat, eps0, k0, u, k);
+[n0_new, m0_new, C0_new, y_new] = beam_effects_new(geo, mesh, mat, eps0, k0, u, k);
 
 
 % Determine the Deformed configuration
