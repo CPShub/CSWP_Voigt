@@ -6,6 +6,9 @@ if nargin < 3
     show_plot = 0;
 end
 
+degelev = [1,1];
+Ref = 3;
+
 s = side_length / 2; 
 rad = pi/180;
 w = cos(45*rad);
@@ -14,7 +17,6 @@ xc = radius * sin(45*rad);
 yc = radius * cos(45*rad);
 mid_r = (radius + s) / 2;
 mid_diag = (xc + s) / 2;
-degelev = [1,1];
 all_nurbs = cell(1, 5); 
 
 %  PATCH 1: Unten (Süden)
@@ -35,7 +37,7 @@ coefs1(1:2, 3, 3) = [s, -s];
 
 w_mat1 = ones(3,3); 
 w_mat1(2,1) = w; % Gewicht am Scheitelpunkt des Bogens (v=1, u=2)
-all_nurbs{1} = finalize_patch(coefs1, w_mat1, center, degelev);
+all_nurbs{1} = finalize_patch(coefs1, w_mat1, center, degelev, Ref);
 
 
 %  PATCH 2: Rechts (Osten)
@@ -55,8 +57,8 @@ coefs2(1:2, 3, 2) = [r_tangent, 0];
 coefs2(1:2, 3, 3) = [xc, yc];
 
 w_mat2 = ones(3,3); 
-w_mat2(3,2) = w; % Bogen liegt bei u=3, Scheitelpunkt bei v=2
-all_nurbs{2} = finalize_patch(coefs2, w_mat2, center, degelev);
+w_mat2(3,2) = w; % Gewicht am Scheitelpunkt des Bogens (v=2, u=3)
+all_nurbs{2} = finalize_patch(coefs2, w_mat2, center, degelev, Ref);
 
 
 %  PATCH 3: Oben (Norden)
@@ -76,8 +78,8 @@ coefs3(1:2, 2, 3) = [0, r_tangent];
 coefs3(1:2, 3, 3) = [xc, yc];
 
 w_mat3 = ones(3,3); 
-w_mat3(2,3) = w; % Bogen liegt bei v=3, Scheitelpunkt bei u=2
-all_nurbs{3} = finalize_patch(coefs3, w_mat3, center, degelev);
+w_mat3(2,3) = w; % Gewicht am Scheitelpunkt des Bogens (v=3, u=2)
+all_nurbs{3} = finalize_patch(coefs3, w_mat3, center, degelev, Ref);
 
 
 %  PATCH 4: Links (Westen)
@@ -97,8 +99,8 @@ coefs4(1:2, 3, 2) = [-s, 0];
 coefs4(1:2, 3, 3) = [-s, s];
 
 w_mat4 = ones(3,3); 
-w_mat4(1,2) = w; % Bogen liegt bei u=1, Scheitelpunkt bei v=2
-all_nurbs{4} = finalize_patch(coefs4, w_mat4, center, degelev);
+w_mat4(1,2) = w; % Gewicht am Scheitelpunkt des Bogens (v=2, u=1)
+all_nurbs{4} = finalize_patch(coefs4, w_mat4, center, degelev, Ref);
 
 
 %  PATCH 5: Zentrales Quadrat
@@ -116,7 +118,6 @@ end
 center_patch = nrbmak(c_sq, {[0 0 0 1 1 1], [0 0 0 1 1 1]});
 center_patch = nrbdegelev(center_patch, degelev);
 
-Ref = 3;
 kv = 1/(Ref+1):1/(Ref+1):Ref/(Ref+1);
 all_nurbs{5} = nrbkntins(center_patch, {kv, kv});
 
@@ -136,7 +137,7 @@ if show_plot
 end
 end
 
-function patch = finalize_patch(coefs, weights, center, degelev)
+function patch = finalize_patch(coefs, weights, center, degelev, Ref)
     for u = 1:3
         for v = 1:3
             cw = weights(u,v);
@@ -147,7 +148,6 @@ function patch = finalize_patch(coefs, weights, center, degelev)
     end
     patch = nrbmak(coefs, {[0 0 0 1 1 1], [0 0 0 1 1 1]});
     patch = nrbdegelev(patch, degelev);
-    Ref = 3;
     kv = 1/(Ref+1):1/(Ref+1):Ref/(Ref+1);
     patch = nrbkntins(patch, {kv, kv});
 end

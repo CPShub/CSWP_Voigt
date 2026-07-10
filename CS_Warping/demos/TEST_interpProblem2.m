@@ -298,41 +298,41 @@ end
 
 
 % Visualize
-disp("")
-
-figure
-grid on
-hold on
-axis square
-
-% plot the Controlpoints
-scatter(multi_mesh.coords(multi_mesh.elNodeCnt(M1_element_ids, :), 1), multi_mesh.coords(multi_mesh.elNodeCnt(M1_element_ids, :), 2), 20, "red", "filled");
-scatter(multi_mesh.coords(multi_mesh.elNodeCnt(M5_element_ids, :), 1), multi_mesh.coords(multi_mesh.elNodeCnt(M5_element_ids, :), 2), 20, "blue", "filled");
-scatter(multi_mesh.coords(multi_mesh.elNodeCnt(M2_element_ids, :), 1), multi_mesh.coords(multi_mesh.elNodeCnt(M2_element_ids, :), 2), 20, "magenta", "filled");
-
-% plot the interpolation points in between
-scatter(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), 20, "green", "filled");
-scatter(M5_evalpoints_x(:, 1), M5_evalpoints_x(:, 2), 20, "black", "filled");
-scatter(M2_evalpoints_x(:, 1), M2_evalpoints_x(:, 2), 20, "cyan", "filled");
-
-
-
-% Quiver Plot the of the local derivatives of Position
-% Currently only for element 1
-figure
-
-scatter3(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), M1_evalpoints_x(:, 3), 20, "green", "filled")
-grid on
-hold on
-quiver3(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), M1_evalpoints_x(:, 3, ...
-M1_evalpoints_dXdx1s(:, 1), M1_evalpoints_dXdx1s(:, 2), M1_evalpoints_dXdx1s(:, 3), ...
-"red"))
-quiver3(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), M1_evalpoints_x(:, 3, ...
-    M1_evalpoints_dXdx2s(:, 1), M1_evalpoints_dXdx2s(:, 2), M1_evalpoints_dXdx2s(:, 3), ...
-    "blue"))
-
-xlabel("X")
-ylabel("Y")
+% disp("")
+% 
+% figure
+% grid on
+% hold on
+% axis square
+% 
+% % plot the Controlpoints
+% scatter(multi_mesh.coords(multi_mesh.elNodeCnt(M1_element_ids, :), 1), multi_mesh.coords(multi_mesh.elNodeCnt(M1_element_ids, :), 2), 20, "red", "filled");
+% scatter(multi_mesh.coords(multi_mesh.elNodeCnt(M5_element_ids, :), 1), multi_mesh.coords(multi_mesh.elNodeCnt(M5_element_ids, :), 2), 20, "blue", "filled");
+% scatter(multi_mesh.coords(multi_mesh.elNodeCnt(M2_element_ids, :), 1), multi_mesh.coords(multi_mesh.elNodeCnt(M2_element_ids, :), 2), 20, "magenta", "filled");
+% 
+% % plot the interpolation points in between
+% scatter(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), 20, "green", "filled");
+% scatter(M5_evalpoints_x(:, 1), M5_evalpoints_x(:, 2), 20, "black", "filled");
+% scatter(M2_evalpoints_x(:, 1), M2_evalpoints_x(:, 2), 20, "cyan", "filled");
+% 
+% 
+% 
+% % Quiver Plot the of the local derivatives of Position
+% % Currently only for element 1
+% figure
+% 
+% scatter3(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), M1_evalpoints_x(:, 3), 20, "green", "filled")
+% grid on
+% hold on
+% quiver3(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), M1_evalpoints_x(:, 3, ...
+% M1_evalpoints_dXdx1s(:, 1), M1_evalpoints_dXdx1s(:, 2), M1_evalpoints_dXdx1s(:, 3), ...
+% "red"))
+% quiver3(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), M1_evalpoints_x(:, 3, ...
+%     M1_evalpoints_dXdx2s(:, 1), M1_evalpoints_dXdx2s(:, 2), M1_evalpoints_dXdx2s(:, 3), ...
+%     "blue"))
+% 
+% xlabel("X")
+% ylabel("Y")
 
 
 
@@ -365,14 +365,14 @@ txt = uicontrol('Parent', fig, 'Style', 'text', ...
     'Position', [350, 70, 100, 20], ...
     'String', 'Index i = 1');
 
-update_plot(1, ax, multi_mesh, M1_evalpoints_e, M1_evalpoints_edsp, M1_evalpoints_ders, M1_evalpoints_x, M1_evalpoints_dxalpha, scale_vars);
+update_plot(1, ax, multi_mesh, M1_evalpoints_e, M1_evalpoints_edsp, M1_evalpoints_ders, M1_evalpoints_x, M1_evalpoints_dxalpha);
 
 sld.Callback = @(src, event) callback_function(src, txt, ax, multi_mesh, M1_evalpoints_e, M1_evalpoints_edsp, M1_evalpoints_ders, M1_evalpoints_x, M1_evalpoints_dxalpha);
 
 function callback_function(src, txt_handle, ax_handle, multi_mesh, M1_evalpoints_e, M1_evalpoints_edsp, M1_evalpoints_ders, M1_evalpoints_x, M1_evalpoints_dxalpha)
     i = round(src.Value);
     src.Value = i;
-    txt_handle.String = ['Index i = ', num2size(i)];
+    txt_handle.String = ['Index i = ', num2str(i)];
     update_plot(i, ax_handle, multi_mesh, M1_evalpoints_e, M1_evalpoints_edsp, M1_evalpoints_ders, M1_evalpoints_x, M1_evalpoints_dxalpha);
 end
 
@@ -382,6 +382,7 @@ function update_plot(i, ax_handle, multi_mesh, M1_evalpoints_e, M1_evalpoints_ed
     grid(ax_handle, 'on');
     
     el_i = M1_evalpoints_e(i);
+    i = i + 180;
     cnt_x = multi_mesh.initcoords(multi_mesh.elNodeCnt(el_i, :), :);
     edsp3_i = M1_evalpoints_edsp(i, :);
     ders2_i = M1_evalpoints_ders(i, :);
@@ -417,284 +418,3 @@ function update_plot(i, ax_handle, multi_mesh, M1_evalpoints_e, M1_evalpoints_ed
     ylabel(ax_handle, "Y");
     hold(ax_handle, 'off');
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-figure
-subtitle("Mesh 1 dx_alpha6 Component analysis")
-subplot(2,2,2)
-scatter3()
-
-
-
-hold on
-grid on
-imagesc(M1_evalpoints_ders(M1_last_ids, 9:end)')
-colorbar()
-yyaxis right
-plot((1:20)', sum(M1_evalpoints_ders(M1_last_ids, 9:end)'))
-subplot(2,2,3)
-hold on
-grid on
-imagesc(M1_evalpoints_edsp(M1_last_ids, 9:end))
-colorbar()
-subplot(2,2,4)
-hold on
-grid on
-M1_dxalpha_matrix = flip(diag(M1_evalpoints_dxalpha(M1_last_ids, 6)));
-imagesc(M1_dxalpha_matrix);
-colorbar()
-clim([min(M1_evalpoints_dxalpha(M1_last_ids, 6)), max(M1_evalpoints_dxalpha(M1_last_ids, 6))])
-%scatter((1:20'), M1_evalpoints_dxalpha(M1_last_ids, 6), 20, 'MarkerEdgeColor', "red", "DisplayName", sprintf("Dx_alpha(6)"));
-
-
-
-
-
-
-
-% Figure in 3D
-% figure
-% 
-% % plot the Controlpoints
-% scatter3(multi_mesh.coords(multi_mesh.elNodeCnt([13, 14, 15, 16], :), 1), ...
-%     multi_mesh.coords(multi_mesh.elNodeCnt([13, 14, 15, 16], :), 2), ...
-%     zeros(25, 1), ...
-%     20, "red", "filled");
-% grid on
-% hold on
-% scatter3(multi_mesh.coords(multi_mesh.elNodeCnt([65, 66, 67, 68], :), 1), ...
-%     multi_mesh.coords(multi_mesh.elNodeCnt([65, 66, 67, 68], :), 2), ...
-%     zeros(25, 1), ...
-%     20, "blue", "filled");
-
-
-
-M1_last_ids = 181:200; % TODO: Make Automatic
-M5_first_ids = 1:20; % TODO: Make Automatic
-
-
-figure
-subtitle("Mesh 1 dx_alpha6 Component analysis")
-subplot(2,2,2)
-hold on
-grid on
-imagesc(M1_evalpoints_ders(M1_last_ids, 9:end)')
-colorbar()
-yyaxis right
-plot((1:20)', sum(M1_evalpoints_ders(M1_last_ids, 9:end)'))
-subplot(2,2,3)
-hold on
-grid on
-imagesc(M1_evalpoints_edsp(M1_last_ids, 9:end))
-colorbar()
-subplot(2,2,4)
-hold on
-grid on
-M1_dxalpha_matrix = flip(diag(M1_evalpoints_dxalpha(M1_last_ids, 6)));
-imagesc(M1_dxalpha_matrix);
-colorbar()
-clim([min(M1_evalpoints_dxalpha(M1_last_ids, 6)), max(M1_evalpoints_dxalpha(M1_last_ids, 6))])
-%scatter((1:20'), M1_evalpoints_dxalpha(M1_last_ids, 6), 20, 'MarkerEdgeColor', "red", "DisplayName", sprintf("Dx_alpha(6)"));
-
-
-figure
-subtitle("Mesh 5 dx_alpha6 Component analysis")
-subplot(2,2,2)
-hold on
-grid on
-imagesc(M5_evalpoints_ders(M5_first_ids, :)')
-colorbar()
-yyaxis right
-plot(M5_first_ids', sum(M1_evalpoints_ders(M5_first_ids, 9:end)'))
-subplot(2,2,3)
-hold on
-grid on
-imagesc(M5_evalpoints_edsp(M5_first_ids, :))
-colorbar()
-subplot(2,2,4)
-hold on
-grid on
-M5_dxalpha_matrix = flip(diag(M5_evalpoints_dxalpha(M5_first_ids, 6)));
-imagesc(M5_dxalpha_matrix);
-colorbar()
-clim([min(M5_evalpoints_dxalpha(M5_first_ids, 6)), max(M5_evalpoints_dxalpha(M5_first_ids, 6))])
-%scatter((1:20'), M1_evalpoints_dxalpha(M1_last_ids, 6), 20, 'MarkerEdgeColor', "red", "DisplayName", sprintf("Dx_alpha(6)"));
-
-
-
-
-
-
-
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% DX_ALPHA
-figure
-M1_last_ids = 181:200; % TODO: Make Automatic
-M5_first_ids = 1:20; % TODO: Make Automatic
-
-subplot(2,1,1);
-grid on
-hold on
-colors = ["#C44E52", "#55A868", "#4C72B0", "#DD8452", "#8172B3", "#937860"];
-rgb_matrix = validatecolor(colors, 'multiple');
-
-title("M1 - Dx_alpha")
-for kk = 1:6
-    % Iterate over all ccy components
-    scatter(M1_evalpoints_param_x, M1_evalpoints_dxalpha(M1_last_ids, kk), ...
-        20, 'MarkerEdgeColor', rgb_matrix(kk,:), ...
-        "DisplayName", sprintf("Dx_alpha(%d)", kk));
-    plot(M1_evalpoints_param_x, M1_evalpoints_dxalpha(M1_last_ids, kk), "Color", rgb_matrix(kk,:))
-end
-
-subplot(2,1,2)
-title("M5")
-grid on
-hold on
-for kk = 1:6
-    % Iterate over all ccy components
-    scatter(M5_evalpoints_param_x, M5_evalpoints_dxalpha(M5_first_ids, kk), ...
-        20, 'MarkerEdgeColor', rgb_matrix(kk,:), ...
-        "DisplayName", sprintf("Dx_alpha: %d", kk));
-    plot(M5_evalpoints_param_x, M5_evalpoints_dxalpha(M5_first_ids, kk), ...
-        "Color", rgb_matrix(kk,:))
-end
-legend();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% CCY
-figure
-%suptitle("CCY Components over Mesh Boundary")
-% only plot the very Last of M1 and very First of M5 in a 2D plot
-
-M1_last_ids = 181:200; % TODO: Make Automatic
-M5_first_ids = 1:20; % TODO: Make Automatic
-
-subplot(2,1,1);
-grid on
-hold on
-colors = ["#C44E52", "#55A868", "#4C72B0", "#DD8452", "#8172B3", "#937860"];
-rgb_matrix = validatecolor(colors, 'multiple');
-
-title("M1")
-for kk = 5:5
-    % Iterate over all ccy components
-    scatter(M1_evalpoints_param_x, M1_evalpoints_ccy(M1_last_ids, kk), ...
-        20, 'MarkerEdgeColor', rgb_matrix(kk,:), ...
-        "DisplayName", sprintf("CCY: %d", kk));
-    plot(M1_evalpoints_param_x, M1_evalpoints_ccy(M1_last_ids, kk), "Color", rgb_matrix(kk,:))
-end
-
-subplot(2,1,2)
-title("M5")
-grid on
-hold on
-for kk = 5:5
-    % Iterate over all ccy components
-    scatter(M5_evalpoints_param_x, M5_evalpoints_ccy(M5_first_ids, kk), ...
-        20, 'MarkerEdgeColor', rgb_matrix(kk,:), ...
-        "DisplayName", sprintf("CCY: %d", kk));
-    plot(M5_evalpoints_param_x, M5_evalpoints_ccy(M5_first_ids, kk), ...
-        "Color", rgb_matrix(kk,:))
-end
-legend();
-
-
-%%%%%%%%%%%%%%%%%%
-% POSITION
-
-
-figure
-title("Position over Mesh Boundary")
-scatter3( ...
-    M1_evalpoints_x(:, 1), ...
-    M1_evalpoints_x(:, 2), ...
-    M1_evalpoints_x(:, 3), ...
-    20, "green", "filled");
-grid on
-hold on
-scatter3( ...
-    M5_evalpoints_x(:, 1), ...
-    M5_evalpoints_x(:, 2), ...
-    M5_evalpoints_x(:, 3), ...
-    50, "magenta");
-xlabel("X")
-ylabel("Y")
-
-
-
-
-
-
-
-
-% plot the interpolation points in between
-figure
-title("Von-Mises Stress over the Mesh Boundary")
-scatter3( ...
-    M1_evalpoints_x(:, 1), ...
-    M1_evalpoints_x(:, 2), ...
-    M1_evalpoints_vms, ...
-    20, "green", "filled");
-grid on
-hold on
-scatter3( ...
-    M5_evalpoints_x(:, 1), ...
-    M5_evalpoints_x(:, 2), ...
-    M5_evalpoints_vms, ...
-    20, "magenta", "filled");
-xlabel("X")
-ylabel("Y")
-
-
-% plot the VM energies over all available Datapoints
