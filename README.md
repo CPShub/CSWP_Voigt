@@ -1,13 +1,13 @@
 # CSWP-Voigt - The Cross Sectional Warping Problem in Voigt notation 
 
-This repository accompanies the publication [["The cross-sectional warping problem for hyperelastic beams: An efficient formulation in Voigt notation"](https://arxiv.org/abs/2604.12886)] and provides the source code and analysis environments for the results presented therein. 
+This repository accompanies the publication [["The cross-sectional warping problem for hyperelastic beams: A compact formulation in Voigt notation"](https://arxiv.org/abs/2604.12886)] and provides the source code and analysis environments for the results presented therein. 
 
 CSWP-Voigt is an extension and modification of the NLIGA framework originally developed by Du et al. (2020). If you intend to use this software, please give credit by citing the following articles:
 
 **Article 1 (ours)**
 ```bibtex
 @unpublished{AlzateCobo2026,
-    title = {The cross-sectional warping problem for hyperelastic beams: An efficient formulation in Voigt notation},
+    title = {The cross-sectional warping problem for hyperelastic beams: A compact formulation in Voigt notation},
     author = {Alzate Cobo, Juan C. and Henkels, Tobias and Weeger, Oliver},
     note = {Preprint available under url},
     year = {2026},
