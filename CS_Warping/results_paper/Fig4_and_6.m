@@ -67,7 +67,6 @@ use_vertical_divide = 0;
 % Select cross-section, loading case and visualized data
 %cs_type = "circle";
 cs_type = "square";
-%cs_type = "circle_square";
 
 %loading_case = "full"; % Multi-Axial Loading case
 loading_case = "simple";% Uni-Axial X-Shear
@@ -99,16 +98,13 @@ end
 cs_coords_center = [-1, -1];
 
 % Cross-Section
-if cs_type == "circle"
-    plate = geo_circle( [0, 0], 1);
-    savefile_cs = '_Circle.jpg';
-elseif cs_type == "square"
+if cs_type == "square"
     cs_options = {};
     cs_options.RefinementX = 9;
     cs_options.RefinementY = 9;
     plate = geo_square( [0,0], 1, cs_options);
     savefile_cs = '_Square.jpg';
-elseif cs_type == "circle_square"
+elseif cs_type == "circle"
     cs_options = {};
     cs_options.Refinement = 3;
     plate = geo_circle_with_square( [0,0], 1, 0.6, cs_options);

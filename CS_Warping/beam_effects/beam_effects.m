@@ -1,4 +1,4 @@
-function [n0, m0, C0, uy_all] = beam_effects_new(geo, mesh, mat, eps0, k0, u, K)
+function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
     
     
     % Integration over the whole domain

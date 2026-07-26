@@ -131,7 +131,6 @@ while curtime ~= 1    % get to the end
             elseif mat.index >= 110 && mat.index < 120
                 % Elastic CSWP with PK2
                 [ k, r ] = globalstiffness_CSWP_PK2( eltype, geo, mesh, mat, u , curtime,eps0,k0);
-                %[ k, r] = globalstiffness_CSWP_PK2_meshwise( eltype, geo, mesh, mat, u , curtime,eps0,k0);
             end
         % belongs to hyperelastic materials
         elseif ( mat.index >= 10 && mat.index < 20 )            
@@ -234,7 +233,7 @@ if (mat.index >= 10 && mat.index < 20)
 
 elseif (mat.index >= 110 && mat.index < 120)
     % Novel determination of beam forces
-    [n0, m0, C0, ~] = beam_effects_new(geo, mesh, mat, eps0, k0, u, k);
+    [n0, m0, C0, ~] = beam_effects(geo, mesh, mat, eps0, k0, u, k);
 end
 
 % Determine the Deformed configuration

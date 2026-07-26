@@ -63,16 +63,13 @@ nl_return = nliga_returns(eltype, geo, mesh, mat, dbc, tbc, fout, eps0, k0);
 u = nl_return.u; % Solution displacement vector
 k = nl_return.k; % Solution stiffness matrix
 
-% 1. Compute the Beam Forces acting on the cross-section
-[forces, moments] = beam_forces(geo, mesh, mat, eps0, k0, u);
+% Compute the Beam Forces acting on the cross-section and the Beam Stiffness Matrix 
+% (Sensitivity of Forces and Moments in relationb to eps0 and k0)
+[forces, moments, sensitivities] = beam_effects(geo, mesh, mat, eps0, k0, u, k);
+
 disp("Forces in [x,y,z]: ")
 disp(forces);
 disp("Moments in [x,y,z]: ")
 disp(moments);
-
-
-% 2. Compute the Beam Stiffness Matrix (Sensitivity of Forces and Moments in relation
-% to eps0 and k0)
-[C0] = beam_stiffness(geo, mesh, mat, eps0, k0, u, k);
 disp("Beam Stiffness Matrix [6,6]: ")
 disp(C0);
