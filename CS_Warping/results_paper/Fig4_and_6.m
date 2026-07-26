@@ -61,23 +61,23 @@
 
 
 % To orient the dividing line diagonally, set the following value to 0
-use_vertical_divide = 1;
+use_vertical_divide = 0;
 
 
 % Select cross-section, loading case and visualized data
 %cs_type = "circle";
-%cs_type = "square";
-cs_type = "circle_square";
+cs_type = "square";
+%cs_type = "circle_square";
 
-loading_case = "full"; % Multi-Axial Loading case
-%loading_case = "simple";% Uni-Axial X-Shear
+%loading_case = "full"; % Multi-Axial Loading case
+loading_case = "simple";% Uni-Axial X-Shear
 
 
 display_type = "u3";    % u3 displacement component
 %display_type = "vm";   % von-Mises Stress
 
-recompute_files = 0;    % display_type may be changes without recomputing
-save_file = 0;  
+recompute_files = 1;    % display_type may be changes without recomputing
+save_file = 1;  
 
 
 %%
@@ -103,10 +103,15 @@ if cs_type == "circle"
     plate = geo_circle( [0, 0], 1);
     savefile_cs = '_Circle.jpg';
 elseif cs_type == "square"
-    plate = geo_square( [0,0], 1, 0);
+    cs_options = {};
+    cs_options.RefinementX = 9;
+    cs_options.RefinementY = 9;
+    plate = geo_square( [0,0], 1, cs_options);
     savefile_cs = '_Square.jpg';
 elseif cs_type == "circle_square"
-    plate = geo_circle_with_square( [0,0], 1, 0.6);
+    cs_options = {};
+    cs_options.Refinement = 3;
+    plate = geo_circle_with_square( [0,0], 1, 0.6, cs_options);
     savefile_cs = "_CircleSquare.jpg";
 end
 
@@ -149,6 +154,7 @@ if cs_type == "circle"
 else
     options.show_coords.flag = 0;
 end
+
 options.show_coords.center = cs_coords_center;
 options.given_title = "";%title_;
 options.fontsize = 24;
@@ -193,7 +199,7 @@ fnameB = [filenames(2, :), '.msh'];
 
 
 %%
-
+ref = 6;
 dbc = [];        % dbc = [node index, node dof, prescribed displacement]
 tbc = [];
 tol = 1e-8;
@@ -241,7 +247,7 @@ end
 plot_color_flat_combined(display_flag, fnameA, fnameB, options);
 
 if save_file == 1
-    savefile_name = join(['RESULT_' savefile_loading_case savefile_display_type savefile_cs]);
+    savefile_name = join(['RESULT_', savefile_loading_case, savefile_display_type, savefile_cs], "");
     savefile_path = fullfile(pwd, 'output', savefile_name)
     exportgraphics(gcf,savefile_path,'Resolution',300);
 end

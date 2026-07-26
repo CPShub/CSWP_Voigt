@@ -76,9 +76,18 @@ for m = 1:num_meshes
             dx_alpha = edsp * ders3D';
             F = def_gradient(eps0, k0, x, dx_alpha);
     
-            % Retrieve PK2 material response as PK2 Stress and dtangent 
-            [ stress, ~ ] = material_CSWP_PK2_hyperelasticity( dof, mat, F );
-            
+
+            if (mat.index >= 10 && mat.index < 20)
+                % Retrieve PK1 material response as PK2 Stress and
+                % transform into Cauchy Stress
+                mat2 = mat;
+                mat2.index = mat.index + 100;
+                [ stress, ~ ] = material_CSWP_PK2_hyperelasticity( dof, mat2, F );
+            elseif (mat.index >= 110 && mat.index < 120)
+                % Retrieve PK2 material response as PK2 Stress and
+                % transform into Cauchy Stress
+                [ stress, ~ ] = material_CSWP_PK2_hyperelasticity( dof, mat, F );
+            end
             ccy = pk2cauchy(stress, F);
         
             % global vmesh Index j

@@ -72,29 +72,29 @@ for step = 1:numSteps
     sideValues = d(1) * v_rel(:, 2) - d(2) * v_rel(:, 1);
 
     if step == 1
-        flagsA = ones(size(sideValues));
-        flagsB = ones(size(sideValues));
+        flagsA = true(size(sideValues));
+        flagsB = true(size(sideValues));
     else
         flagsA = sideValues >= e;
         flagsB = sideValues <= -e;
     end
     
-    trimA.vertices{step} = v_orig;
-    trimB.vertices{step} = v_orig;
+    trimA.vertices{step} = v_orig(flagsA, :);
+    trimB.vertices{step} = v_orig(flagsB, :);
 
-    trimA.displacement{step} = disp_orig;
-    trimB.displacement{step} = disp_orig;
+    trimA.displacement{step} = disp_orig(flagsA, :);
+    trimB.displacement{step} = disp_orig(flagsB, :);
     
-    trimA.stress{step} = stress_orig;
-    trimB.stress{step} = stress_orig;
+    trimA.stress{step} = stress_orig(flagsA, :);
+    trimB.stress{step} = stress_orig(flagsB, :);
     
-    trimA.strain{step} = strain_orig;
-    trimB.strain{step} = strain_orig;
+    trimA.strain{step} = strain_orig(flagsA, :);
+    trimB.strain{step} = strain_orig(flagsB, :);
 
-    maskA = all(flagsA(f_orig), 2);
-    maskB = all(flagsB(f_orig), 2);
+    %maskA = all(flagsA(f_orig), 2);
+    %maskB = all(flagsB(f_orig), 2);
 
-    trimA.face{step} = f_orig(maskA, :);
-    trimB.face{step} = f_orig(maskB, :);
+    %trimA.face{step} = f_orig(maskA, :);
+    %trimB.face{step} = f_orig(maskB, :);
 end
 end

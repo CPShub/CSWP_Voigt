@@ -222,22 +222,20 @@ while curtime ~= 1    % get to the end
     end
 end
 
-% Determine beam sensitivities
-%[y] = crossectional_stretch_sensitivity(geo, mesh, mat, eps0, k0, u, k);
-tic
-% Determination of Beam Stiffness
-C0 = beam_stiffness(geo, mesh, mat, eps0, k0, u, k);
-    
-% Determination of Beam Forces
-[n0, m0] = beam_forces(geo, mesh, mat, eps0, k0, u);
 
-nmc_time_old = toc;
+if (mat.index >= 10 && mat.index < 20)
+    % Old Approach using PK1
 
-% TODO: remove after testing
-% Novel determination of beam forces
-tic
-[n0_new, m0_new, C0_new, y_new] = beam_effects_new(geo, mesh, mat, eps0, k0, u, k);
-nmc_time_new = toc;
+    % Determination of Beam Stiffness
+    C0 = beam_stiffness(geo, mesh, mat, eps0, k0, u, k);
+        
+    % Determination of Beam Forces
+    [n0, m0] = beam_forces(geo, mesh, mat, eps0, k0, u);
+
+elseif (mat.index >= 110 && mat.index < 120)
+    % Novel determination of beam forces
+    [n0, m0, C0, ~] = beam_effects_new(geo, mesh, mat, eps0, k0, u, k);
+end
 
 % Determine the Deformed configuration
 u_disp = u(1:end-6);
@@ -248,14 +246,6 @@ coords_def = mesh.coords(:, [1:3]) + reshape(u_disp, 3, [])';
 nliga_return.C0 = C0;
 nliga_return.n0 = n0;
 nliga_return.m0 = m0;
-nliga_return.nmc_time = nmc_time_old;
-
-% TODO: Remove after testing
-nliga_return.C0_new = C0_new;
-nliga_return.n0_new = n0_new;
-nliga_return.m0_new = m0_new;
-nliga_return.nmc_time_new = nmc_time_new;
-
 nliga_return.k = k;
 nliga_return.u = u;
 nliga_return.coords_def = coords_def;

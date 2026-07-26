@@ -17,6 +17,7 @@ function square = geo_square( pts, length, varargin)
         show_plot_bool = 1;
     end
     
+    % Handle Additional Geometry generation and visualization options
     if ~isempty(varargin)
         options = varargin{1};
         

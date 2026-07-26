@@ -1,6 +1,9 @@
 
 % define the geometry
-plate_circle = geo_circle_with_square([0,0], 1, 0.4);
+r=6;%r = 30;
+cs_options = {};
+cs_options.Refinement = r;
+plate_circle = geo_circle_with_square([0,0], 1, 0.4, cs_options);
 %plate_circle = geo_circle_with_square_3d([0,0], 1, 0.4,0);
 
 % Create the Mesh
@@ -12,16 +15,16 @@ mat.index = 114;
 ndofs = dof * multi_mesh.nCpts;   % total dofs
 u = zeros(ndofs + 6,1);
 %eps0 = [0.005,0,0]'; 
-eps0 = [0,0.01,0]';
-%eps0 = [0,0,0]';
-k0 = [0,0,0]';
+%eps0 = [0,0.01,0]';%[0,0,0.01]';%[0,0.01,0]';
+eps0 = [0.001,-0.05,-0.02]';
+k0 = [0.008,0.04,0.09]';
 %k0 = [0, 0, 0.05]';
 curtime=1;
 
 filename_pk2 = 'trash2';
 fout = fopen(get_output_file_name(filename_pk2), 'w');
-geo_s = geo_square();
-mesh_s = build_iga_mesh(geo_s);
+%geo_s = geo_rectangle([0,0], 1, 2);%geo_square([0,0], );
+%mesh_s = build_iga_mesh(geo_s);
 
 %[ Kglob, Rglob ] = globalstiffness_CSWP_PK2_meshwise(30, plate_circle, multi_mesh, mat, u , curtime,eps0,k0);
 %[nliga_return] = nliga_returns( 30, geo_s, mesh_s, mat, [], [], fout,eps0, k0 );
@@ -31,15 +34,20 @@ mesh_s = build_iga_mesh(geo_s);
 
 % Read the trash2 file
 %vmesh = read_visual_mesh("trash2.msh");
+A = [0.01, 0.002, 0; -0.015, 0.005, 0; 0.008, -0.012, 0];
+
 u = nliga_return.u;
 dof = 3;
 
 % Compute DEF and STRESS results
 boundary_elements = [13, 14, 15, 16, 65, 66, 67, 68];
 
-M1_element_ids = [13, 14, 15, 16];
-M5_element_ids = [65, 66, 67, 68];
-M2_element_ids = [17, 21, 25, 29];
+nodes_per_mesh = (r+1) * (r+1);
+M1_element_ids = r*(r+1)+1:(r+1)*(r+1);
+%M4_element_ids = 
+%M1_element_ids = [31, 32, 33, 34, 35, 36];%[13, 14, 15, 16];
+M5_element_ids = 4*(r+1)*(r+1)+1:4*(r+1)*(r+1)+(r+1);%[65, 66, 67, 68];%[145, 146, 147, 148, 149, 150];%[65, 66, 67, 68];
+%M2_element_ids = (r+1)*(r+1)+1:4*(r+1)*(r+1)+r;%[17, 21, 25, 29];
 
 
 % Define Evaluateion grid in param space
@@ -69,10 +77,10 @@ M1_evalpoints_dxalpha = zeros(n_eval, 6);
 M1_evalpoints_ders = zeros(n_eval, 16);
 M1_evalpoints_edsp = zeros(n_eval, 16);
 
-M1_evalpoints_dXdx1s = zeros(n_eval, 3);
-M1_evalpoints_dXdx2s = zeros(n_eval, 3);
+M5_evalpoints_dXdx1s = zeros(n_eval, 3);
+M5_evalpoints_dXdx2s = zeros(n_eval, 3);
 
-
+M5_evalpoints_PN = zeros(n_eval, 3);
 
 % ==========
 
@@ -92,6 +100,10 @@ M5_evalpoints_dxalpha = zeros(n_eval, 6);
 M5_evalpoints_ders = zeros(n_eval, 16);
 M5_evalpoints_edsp = zeros(n_eval, 16);
 
+M1_evalpoints_dXdx1s = zeros(n_eval, 3);
+M1_evalpoints_dXdx2s = zeros(n_eval, 3);
+
+M1_evalpoints_PN = zeros(n_eval, 3);
 
 % ===========
 
@@ -153,16 +165,21 @@ for iy = 1:n_eval_y
         ders3D(1:2,:) = ders;
         x = N.*elCpts(:,1:dof)';
         x = sum(x,2);
-    
+
         dXdx1 = sum(ders(1, :) .* elCpts(:, 1:dof)', 2);
         dXdx2 = sum(ders(2, :) .* elCpts(:, 1:dof)', 2);
 
         dx_alpha = edsp * ders3D';
         F = def_gradient(eps0, k0, x, dx_alpha);
-    
+        
+        % % Check Affine transofrmation
+        % x0 = sum(N .* elCpts0(:, 1:dof)', 2);
+        % u_new = A * x0;
+        % x = x0 + u_new;
+        % F = A + eye(3,3);
+
         % Retrieve PK2 material response as PK2 Stress and dtangent 
         [ stress, ~ ] = material_CSWP_PK2_hyperelasticity( dof, mat, F );
-        
         ccy = pk2cauchy(stress, F);
             
         % Store the interpolated positional and stress values
@@ -176,6 +193,12 @@ for iy = 1:n_eval_y
 
         M1_evalpoints_dXdx1s(j, :) = dXdx1;
         M1_evalpoints_dXdx2s(j, :) = dXdx2;
+        
+        pk2_matrix = [ stress(1),  stress(4),  stress(6) ;
+            stress(4),  stress(2),  stress(5) ;
+            stress(6),  stress(5),  stress(3) ];
+        pk1_matrix = F * pk2_matrix;
+        M1_evalpoints_PN(j, :) = pk1_matrix(:, 2);
     end
 end
 
@@ -217,10 +240,19 @@ for iy = 1:n_eval_y
         ders3D(1:2,:) = ders;
         x = N.*elCpts(:,1:dof)';
         x = sum(x,2);
+
+        dXdx1 = sum(ders(1, :) .* elCpts(:, 1:dof)', 2);
+        dXdx2 = sum(ders(2, :) .* elCpts(:, 1:dof)', 2);
     
         dx_alpha = edsp * ders3D';
         F = def_gradient(eps0, k0, x, dx_alpha);
     
+        % % Check Affine transofrmation
+        % x0 = sum(N .* elCpts0(:, 1:dof)', 2);
+        % u_new = A * x0;
+        % x = x0 + u_new;
+        % F = A + eye(3,3);
+
         % Retrieve PK2 material response as PK2 Stress and dtangent 
         [ stress, ~ ] = material_CSWP_PK2_hyperelasticity( dof, mat, F );
         
@@ -234,66 +266,82 @@ for iy = 1:n_eval_y
         M5_evalpoints_dxalpha(j, :) = reshape(dx_alpha(:, 1:2), 1, 6);
         M5_evalpoints_ders(j, :) = ders(2, :);
         M5_evalpoints_edsp(j, :) = edsp(3, :);
+
+        M5_evalpoints_dXdx1s(j, :) = dXdx1;
+        M5_evalpoints_dXdx2s(j, :) = dXdx2;
+
+
+        pk2_matrix = [ stress(1),  stress(4),  stress(6) ;
+            stress(4),  stress(2),  stress(5) ;
+            stress(6),  stress(5),  stress(3) ];
+        pk1_matrix = F * pk2_matrix;
+        M5_evalpoints_PN(j, :) = pk1_matrix(:, 2);
     end
 end
-
+% 
 % Do the same again for Mesh 2
-sub_mesh = multi_mesh.submeshes{1,2};
-j = 0;
-for iy = 1:n_eval_x
-    for ix = 1:n_eval_y
-        p = [M2_evalpoints_param_x(ix), M2_evalpoints_param_y(iy)];
-        e = M2_evalpoints_e(iy);
-
-        sctr = multi_mesh.elNodeCnt(e,:);     % element control points index
-        %exyz = sub_mesh.coords(sctr,:);  % element control points' coordinates
-        nn = length(sctr);   % number of control points in the element
-        nn3 = nn*3;          % degree of freedom of control points
-        %nn3 = nn*2;
-        elDoma = multi_mesh.elDoma(e, :);
-
-
-        % Check if global globElNodeCnt should be used
-        sctr = multi_mesh.elNodeCnt(e, :);
-        sctrB = zeros(1, nn3);      
-        sctrB(1:3:nn3) = 3*sctr - 2;% displacement in x direction
-        sctrB(2:3:nn3) = 3*sctr-1;  % displacement in y direction
-        sctrB(3:3:end) = 3*sctr;    % displacement in z direction
-
-        edsp = u(sctrB);
-        edsp = reshape(edsp, 3, nn);
-
-        elCpts0 = multi_mesh.initcoords(sctr,:); % initial coordinates of el cont points
-        elCpts(:,1:3)=elCpts0(:,1:3)+edsp';
-
-
-        % Evalute in the interpolation grid
-        [N,ders] = nurbs_derivatives(p, plate_circle, sub_mesh);
-        jmatrix = ders*elCpts0(:,1:dof-1); %Because the mapping is in 2D
-        ders =  jmatrix \ ders;    
-        ders3D = zeros(3,size(elCpts,1));
-        ders3D(1:2,:) = ders;
-        x = N.*elCpts(:,1:dof)';
-        x = sum(x,2);
-
-        dx_alpha = edsp * ders3D';
-        F = def_gradient(eps0, k0, x, dx_alpha);
-
-        % Retrieve PK2 material response as PK2 Stress and dtangent 
-        [ stress, ~ ] = material_CSWP_PK2_hyperelasticity( dof, mat, F );
-
-        ccy = pk2cauchy(stress, F);
-
-        % Store the interpolated positional and stress values
-        j = j + 1;
-        M2_evalpoints_x(j, :) = x;
-        M2_evalpoints_vms(j, 1) = von_mises(ccy');
-        M2_evalpoints_ccy(j, :) = ccy;
-        M2_evalpoints_dxalpha(j, :) = reshape(dx_alpha(:, 1:2), 1, 6);
-        M2_evalpoints_ders(j, :) = ders(2, :);
-        M2_evalpoints_edsp(j, :) = edsp(3, :);
-    end
-end
+% sub_mesh = multi_mesh.submeshes{1,2};
+% j = 0;
+% for iy = 1:n_eval_x
+%     for ix = 1:n_eval_y
+%         p = [M2_evalpoints_param_x(ix), M2_evalpoints_param_y(iy)];
+%         e = M2_evalpoints_e(iy);
+% 
+%         sctr = multi_mesh.elNodeCnt(e,:);     % element control points index
+%         %exyz = sub_mesh.coords(sctr,:);  % element control points' coordinates
+%         nn = length(sctr);   % number of control points in the element
+%         nn3 = nn*3;          % degree of freedom of control points
+%         %nn3 = nn*2;
+%         elDoma = multi_mesh.elDoma(e, :);
+% 
+% 
+%         % Check if global globElNodeCnt should be used
+%         sctr = multi_mesh.elNodeCnt(e, :);
+%         sctrB = zeros(1, nn3);      
+%         sctrB(1:3:nn3) = 3*sctr - 2;% displacement in x direction
+%         sctrB(2:3:nn3) = 3*sctr-1;  % displacement in y direction
+%         sctrB(3:3:end) = 3*sctr;    % displacement in z direction
+% 
+%         edsp = u(sctrB);
+%         edsp = reshape(edsp, 3, nn);
+% 
+%         elCpts0 = multi_mesh.initcoords(sctr,:); % initial coordinates of el cont points
+%         elCpts(:,1:3)=elCpts0(:,1:3)+edsp';
+% 
+% 
+%         % Evalute in the interpolation grid
+%         [N,ders] = nurbs_derivatives(p, plate_circle, sub_mesh);
+%         jmatrix = ders*elCpts0(:,1:dof-1); %Because the mapping is in 2D
+%         ders =  jmatrix \ ders;    
+%         ders3D = zeros(3,size(elCpts,1));
+%         ders3D(1:2,:) = ders;
+%         x = N.*elCpts(:,1:dof)';
+%         x = sum(x,2);
+% 
+%         dx_alpha = edsp * ders3D';
+%         F = def_gradient(eps0, k0, x, dx_alpha);
+% 
+%         % Check Affine transofrmation
+%         x0 = sum(N .* elCpts0(:, 1:dof)', 2);
+%         u_new = A * x0;
+%         x = x0 + u_new;
+%         F = A + eye(3,3);
+% 
+%         % Retrieve PK2 material response as PK2 Stress and dtangent 
+%         [ stress, ~ ] = material_CSWP_PK2_hyperelasticity( dof, mat, F );
+% 
+%         ccy = pk2cauchy(stress, F);
+% 
+%         % Store the interpolated positional and stress values
+%         j = j + 1;
+%         M2_evalpoints_x(j, :) = x;
+%         M2_evalpoints_vms(j, 1) = von_mises(ccy');
+%         M2_evalpoints_ccy(j, :) = ccy;
+%         M2_evalpoints_dxalpha(j, :) = reshape(dx_alpha(:, 1:2), 1, 6);
+%         M2_evalpoints_ders(j, :) = ders(2, :);
+%         M2_evalpoints_edsp(j, :) = edsp(3, :);
+%     end
+% end
 
 
 
@@ -324,15 +372,49 @@ figure
 scatter3(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), M1_evalpoints_x(:, 3), 20, "green", "filled")
 grid on
 hold on
-quiver3(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), M1_evalpoints_x(:, 3, ...
-M1_evalpoints_dXdx1s(:, 1), M1_evalpoints_dXdx1s(:, 2), M1_evalpoints_dXdx1s(:, 3), ...
-"red"))
-quiver3(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), M1_evalpoints_x(:, 3, ...
-    M1_evalpoints_dXdx2s(:, 1), M1_evalpoints_dXdx2s(:, 2), M1_evalpoints_dXdx2s(:, 3), ...
-    "blue"))
+scatter3(M5_evalpoints_x(:, 1), M5_evalpoints_x(:, 2), M5_evalpoints_x(:, 3), 50, "magenta")
+
+quiver3(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), M1_evalpoints_x(:, 3), M1_evalpoints_dXdx1s(:, 1), M1_evalpoints_dXdx1s(:, 2), M1_evalpoints_dXdx1s(:, 3), "red")
+quiver3(M1_evalpoints_x(:, 1), M1_evalpoints_x(:, 2), M1_evalpoints_x(:, 3), M1_evalpoints_dXdx2s(:, 1), M1_evalpoints_dXdx2s(:, 2), M1_evalpoints_dXdx2s(:, 3), "blue")
+
+
+quiver3(M5_evalpoints_x(:, 1), M5_evalpoints_x(:, 2), M5_evalpoints_x(:, 3), M5_evalpoints_dXdx1s(:, 1), M5_evalpoints_dXdx1s(:, 2), M5_evalpoints_dXdx1s(:, 3), "black")
+quiver3(M5_evalpoints_x(:, 1), M5_evalpoints_x(:, 2), M5_evalpoints_x(:, 3), M5_evalpoints_dXdx2s(:, 1), M5_evalpoints_dXdx2s(:, 2), M5_evalpoints_dXdx2s(:, 3), "cyan")
 
 xlabel("X")
 ylabel("Y")
+zlim()
+
+
+
+% P Contant Forces
+figure
+xx = 1:20;
+
+M1pn = M1_evalpoints_PN(181:200, :);
+M5pn = M5_evalpoints_PN(1:20, :);
+
+error = M1pn - M5pn;
+serror = sum(error, 1);
+
+xlabels = ["PK1(12)", "PK1(22)", "PK1(32)"];
+for i = 1:3
+    subplot(3,1,i)
+    grid on
+    hold on
+    title(sprintf("PN(%d)", i))
+    plot(xx, M1pn(:, i), 'Color', "blue", 'DisplayName', "Mesh 1")
+    yyaxis left
+    scatter(xx, M1pn(:, i), 20, "blue", 'HandleVisibility', 'off')
+    plot(xx, M5pn(:, i), 'Color', "red",'DisplayName', "Mesh 5")
+    scatter(xx, M5pn(:, i), 50, "red", 'HandleVisibility', 'off')
+    yyaxis right
+    plot(xx, error(:, i), "--", 'DisplayName', sprintf("%d:.3f", serror(i)))
+    legend()
+   
+    xlabel("X-Axis Node Index")
+    ylabel(xlabels(i))
+end
 
 
 
