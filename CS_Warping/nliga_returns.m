@@ -97,7 +97,6 @@ cnit = [];            % record the iterative steps
 if ((mat.index >= 10 && mat.index < 20) || (mat.index >= 110 && mat.index < 120))            
     % % output initial undeformed geometries
     if eltype ==30 % CSWP-Element
-        %output_visual_mesh_CSWP( fout, mat, geo, mesh, u, step, curtime, eps0, k0 );
         output_visual_mesh_CSWP_onQP( fout, mat, geo, mesh, u, step, curtime, eps0, k0 );
     elseif mesh.dim == 2 % Plane Element
         output_visual_mesh2d( fout, mat, geo, mesh, u, step, curtime );
@@ -196,7 +195,6 @@ while curtime ~= 1    % get to the end
             % output visualized mesh file with 'filename'
             %if mesh.dim == 2 && eltype == 30
             if eltype == 30
-                %output_visual_mesh_CSWP( fout, mat, geo, mesh, u, step, curtime, eps0, k0);
                 output_visual_mesh_CSWP_onQP( fout, mat, geo, mesh, u, step, curtime, eps0, k0 );
             elseif mesh.dim == 2 
                 output_visual_mesh2d( fout, mat, geo, mesh, u, step, curtime );
@@ -211,7 +209,6 @@ while curtime ~= 1    % get to the end
     else                           % not converged
         if reit <= maxreit         % refine time interval and continue iterating
             curtime = curtime - timeInterval;   % recover current time step
-            %init_vina(ngp) ;                    % Reset the memory-variables ?
             timeInterval = timeInterval/4;      % refine time interval
             reit = reit+1;         % increase reduction index
             u = cu;                % recover current displacement from last converged displacement
@@ -223,7 +220,7 @@ end
 
 
 if (mat.index >= 10 && mat.index < 20)
-    % Old Approach using PK1
+    % Old Approach as fall-back
 
     % Determination of Beam Stiffness
     C0 = beam_stiffness(geo, mesh, mat, eps0, k0, u, k);

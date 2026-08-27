@@ -50,7 +50,7 @@ function [ Kglob, Rglob ] = globalstiffness_CSWP_PK2( eltype, geo, mesh, mat, u 
 % ------------------------------------------------------------------------
 
 
-if eltype == 30 %More element types cmay come in the future
+if eltype == 30 %More element types may come in the future
     dof = 3;
 end
 gp_x = mesh.p+1;        % number of integration points in x-direction

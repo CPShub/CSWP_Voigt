@@ -1,9 +1,47 @@
 function [omesh] = build_omesh(geo)
-% Construct an O-mesh consisting of 4 geometrical arc-segments surrounding a square
+% This function constructs an O-mesh consisting of 4 geometrical arc-segments surrounding a square
 % center segment.
 % The resulting Multi-Mesh object has the same properties as a single mesh
-% object with the addition of the field "submeshes", which contain the
+% object with the addition of the field "submeshes", which contains the
 % individual meshes (in this case 5)
+% Input:
+    % geo           - Employed IGA Geometry 
+% Output:
+    % omesh         - combined mesh object
+% ------------------------------------------------------------------------ 
+% Copyright (C) 2026 Tobias Henkels and Juan C. Alzate Cobo. 
+% 
+% This code is an extension and modification of the NLIGA framework 
+% originally developed by Du et al. (2020). 
+% 
+% ------------------------------------------------------------------------ 
+% CITATION: 
+% If you use this code for your research, please cite: 
+% 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
+% (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
+% framework for nonlinear isogeometric analysis", Computer Aided 
+% Geometric Design, 80, 101869, 2020. 
+% https://doi.org/10.1016/j.cagd.2020.101869 
+% ------------------------------------------------------------------------ 
+% LICENSE: 
+% This function is free software: you can redistribute it and/or modify it 
+% under the terms of the GNU General Public License as published by the 
+% Free Software Foundation, either version 3 of the License, or (at your 
+% option) any later version. (GPL-3.0-or-later) 
+% 
+% This program is distributed in the hope that it will be useful, but 
+% WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+% or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
+% for more details. 
+% ------------------------------------------------------------------------ 
+% CONTACT: 
+% - Tobias Henkels (tobias.henkels@stud.tu-darmstadt.de) 
+% - Juan C. Alzate Cobo (alzate@cps.tu-darmstadt.de) 
+% Technische Universität Darmstadt, Germany 
+% ------------------------------------------------------------------------
 
 n_sub = 5; % Number of Patches to actually connect into one
 % May be changed to only use a subset of the patches. 
@@ -15,7 +53,6 @@ num_meshes = min(length(geo), n_sub);
 mesh = cell(1,num_meshes);
 for i = 1:num_meshes
     mesh{1,i} = build_iga_mesh( geo{1,i} );   
-    %mesh{1, i}.dim = 3;
     mesh{1,i}.gloElNodeCnt = mesh{1,i}.elNodeCnt;
     mesh{1,i}.nodeNum = zeros(mesh{1,i}.nCptsV, mesh{1,i}.nCptsU);
 end
@@ -27,7 +64,7 @@ p = mesh{1,1}.p;
 q = mesh{1,1}.q;
 pq = (p+1)*(q+1);
 
-% Overlap of ElCpts for number of connected elements
+% Overlap of El.-Cpts for number of connected elements
 rem = [0, 
     n_rows,
     2*n_rows,
@@ -42,7 +79,6 @@ for k = 1:num_meshes
     for j = 1:n_rows % Radius Count
         for i = 1:n_cols % Radial Count
             mesh{1,k}.nodeNum(j,i) = (j-1)*(n_cols)+i;
-            %mesh{1,k}.nodeNum = zeros(n_rows, n_cols);
         end
     end
 end
@@ -97,7 +133,7 @@ end
 
 if num_meshes >= 5
     % node Numbering & globCoords assignment of Patch5
-    mesh{1,5}.nodeNum(1, :) = mesh{1,1}.nodeNum(end, :); % First row of Pathc5 = last row of Patch1
+    mesh{1,5}.nodeNum(1, :) = mesh{1,1}.nodeNum(end, :); % First row of Patch5 = last row of Patch1
     mesh{1,5}.nodeNum(end, :) = mesh{1,3}.nodeNum(1, :); % last row of Patch5 = first row of Patch3
     mesh{1,5}.nodeNum(:, 1) = mesh{1,4}.nodeNum(:, end); % First Column of Patch5 = Last column of Patch4
     mesh{1,5}.nodeNum(:, end) = mesh{1,2}.nodeNum(:, 1); % Last Column of Patch5 = First Column of Patch2
@@ -113,34 +149,31 @@ if num_meshes >= 5
     end
 end
 
-%% GLobal Connectivity
+%% Global Connectivity
 
 global_node_id = 0;
 global_ElNodeCnt = zeros(n_elems_total, (p+1)*(q+1));
 global_elDoma = zeros(n_elems_total, 4);
 
 for kk = 1:num_meshes
-    % Speicher vorallokieren für die Konnektivitätsmatrix des aktuellen Patches
+    % preallocate global element connectivity matrix for the current path
     mesh{1,kk}.gloElNodeCnt = zeros(mesh{1,kk}.nElems, mesh{1,kk}.nElemCpts);
     
-    % Zähler für die Elemente des aktuellen Patches
     el_idx = 0;
     
-    % Schleife über alle Elemente des aktuellen Patches
+    % Loop over all elements in the patch
     for j = 1:mesh{1,kk}.nElemV
         for i = 1:mesh{1,kk}.nElemU
             global_node_id = global_node_id + 1; % Node index GLOBALLY
             el_idx = el_idx + 1; % Node index in THIS Mesh
             
-            % Das Fenster greift auf die fertig gekoppelte nodeNum des Patches zu
-            % Dank deiner Vorarbeit enthält diese bereits die globalen IDs!
+            % Extract the neighboring nodes (based on original node
+            % numbering)
             local_window = mesh{1,kk}.nodeNum(j:j+q, i:i+p);
             
-            % Zeilenweise flachklopfen und in die globale Matrix schreiben
+            % Reduce window matrix into a row
             mesh{1,kk}.gloElNodeCnt(el_idx, :) = reshape(local_window', 1, []);
             
-            % TODO: Check if this works
-            %mesh{1, kk}.elNodeCnt(el_idx, :) = reshape(local_window', 1, []);
             global_ElNodeCnt(global_node_id, :) = reshape(local_window', 1, []);
             global_elDoma(global_node_id, :) = mesh{1, kk}.elDoma(el_idx, :);
             
@@ -174,8 +207,8 @@ end
 omesh.dim = mesh{1,1}.dim;
 omesh.p = mesh{1,1}.p;
 omesh.q = mesh{1,1}.q;
-%omesh.k = mesh{1,1}.p; % Copy to use for 3D Mesh Visualiation options
-omesh.nCpts = n_points_total; % All available unique control points?
+%omesh.k = mesh{1,1}.p; % Copy to use for 3D Mesh Visualization options
+omesh.nCpts = n_points_total;
 omesh.coords = globCoords;
 omesh.initcoords = globCoords;
 omesh.nElems = n_elems_total;
@@ -184,7 +217,7 @@ omesh.nElemCpts = pq;
 omesh.elNodeCnt = global_ElNodeCnt;
 omesh.uKnots = mesh{1,1}.uKnots;
 omesh.vKnots = mesh{1,1}.vKnots;
-%omesh.wKnots = zeros(size(mesh{1,1}.vKnots)); % Copy to use for 3D Mesh Visualiation options
+%omesh.wKnots = zeros(size(mesh{1,1}.vKnots)); % Copy to use for 3D Mesh Visualization options
 omesh.nCptsU = n_cols;
 omesh.nCptsV = n_rows;
 omesh.submeshes = mesh;

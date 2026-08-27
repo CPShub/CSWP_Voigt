@@ -1,17 +1,54 @@
 function [ Kglob, Rglob ] = globalstiffness_CSWP_PK1_Arora( eltype, geo, mesh, mat, u, curtime, eps0, k0 )
 % Computes and assembles the global stiffness matrix and residual vector
 % for the cross-sectional warping problem using the PK1 formulation of
-% Arora et al. implemented in an optimized blockwise manner.
-%
+% Arora et al. implemented in an optimized blockwise manner. 
 % This function is the PK1 counterpart of globalstiffness_CSWP_PK2.
-%
-% Required material routine:
-%   [ pk1, A ] = material_CSWP_hyperelasticity( dim, mat, F );
-%
-% where:
-%   pk1          : 3 x 3 first Piola-Kirchhoff stress
-%   A(i,A,j,B)  : dP_iA / dF_jB, size 3 x 3 x 3 x 3
-
+% Input:
+    % eltype    - (Int) Element type identifier, 30 for CSWP
+    % geo       - IGA Geometry object as foound in "geometries"
+    % mesh      - Mesh object, see  "build_iga_mesh(geo)"
+    % mat       - (Struct) Containing the material properties, see "default_mat()"
+    % u         - Displacement solution vector
+    % curtime   - Current time step
+    % eps0      - (3,1) vector containing the strain prescriptors
+    % k0        - (3,1) vector containing the twist prescriptors
+% Output:
+    % Kglob     - (n,n) Matrix of global stiffness entries
+    % Rglob     - (n,1) Vector of global residual entries
+% ------------------------------------------------------------------------ 
+% Copyright (C) 2026 Tobias Henkels and Juan C. Alzate Cobo. 
+% 
+% This code is an extension and modification of the NLIGA framework 
+% originally developed by Du et al. (2020). 
+% 
+% ------------------------------------------------------------------------ 
+% CITATION: 
+% If you use this code for your research, please cite: 
+% 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
+% (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
+% framework for nonlinear isogeometric analysis", Computer Aided 
+% Geometric Design, 80, 101869, 2020. 
+% https://doi.org/10.1016/j.cagd.2020.101869 
+% ------------------------------------------------------------------------ 
+% LICENSE: 
+% This function is free software: you can redistribute it and/or modify it 
+% under the terms of the GNU General Public License as published by the 
+% Free Software Foundation, either version 3 of the License, or (at your 
+% option) any later version. (GPL-3.0-or-later) 
+% 
+% This program is distributed in the hope that it will be useful, but 
+% WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+% or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
+% for more details. 
+% ------------------------------------------------------------------------ 
+% CONTACT: 
+% - Tobias Henkels (tobias.henkels@stud.tu-darmstadt.de) 
+% - Juan C. Alzate Cobo (alzate@cps.tu-darmstadt.de) 
+% Technische Universität Darmstadt, Germany 
+% ------------------------------------------------------------------------
 
 if eltype == 30
     dof = 3;

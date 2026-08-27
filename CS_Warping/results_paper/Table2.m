@@ -38,8 +38,9 @@
 
 % Build geometrical model
 plate =  geo_square( [0,0], 1, 0);
-eps0 = [0.02, 0.03, 0.06]';
-k0 = [0.01,0.02,0.1]';
+mesh = build_iga_mesh( plate );
+eps0 = [0.02, 0.03, 0.1]';
+k0 = [0.01,0.02,0.02]';
 
 % Store indicees for compared material models
 index_SVK_pk1 = 14; % Saint-Venant Kirchhoff with PK1

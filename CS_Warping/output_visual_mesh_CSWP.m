@@ -65,17 +65,7 @@ end
 num1 = 10;        
 num2 = 10;
 polygon = build_visual_mesh_suf( num1, num2);        % build visualized mesh
-%polygon = build_visual_mesh_suf_3d(num1, num2);
-
 kntcrv = build_visual_knotcurve_suf( mesh.uKnots, mesh.vKnots, num1+1 ); % build visualized knot curves
-%kntcrv = build_visual_knotcurve_suf_3d( mesh.uKnots, mesh.vKnots, num1+1 ); % build visualized knot curves
-
-
-
-
-
-
-
 
 % Pre-Assign vmesh
 numpts = (num1+1)*(num2+1) + size(kntcrv.linpts,1);
@@ -83,9 +73,6 @@ vmesh.nodalpts = zeros(num_meshes * numpts,3);
 vmesh.displacement = zeros(num_meshes* numpts,3);
 vmesh.stress = zeros(num_meshes * numpts,6);
 vmesh.strain = zeros(num_meshes * numpts,6);
-
-% TODO: remove after testing
-vms = zeros(num_meshes * numpts,1);
 
 % Iterate over all meshes
 j = 0;
@@ -139,14 +126,6 @@ for m = 1:num_meshes
 
         % Retrieve PK2 material response as PK2 Stress and dtangent 
         [ pk2, ~] = material_CSWP_PK2_hyperelasticity( 3, mat, F );
-        
-        % [R,dRdparm] = nurbs_derivatives( [xi, eta], geo, sub_mesh );
-        % 
-        % jmatrix = dRdparm*exyz(:,1:3); 
-        % dRdx =  jmatrix \ dRdparm;              
-        % F = edsp(1:3,:) * dRdx' + eye(3);   
-        % 
-        % [ pk2, ~ ] = constitutive_relation( sub_mesh.dim, mat, F );
         ccy = pk2cauchy(pk2, F);
         
         
@@ -157,9 +136,6 @@ for m = 1:num_meshes
         vmesh.stress(j,:) = ccy';
         strain = (F'*F-eye(3))/2;
         vmesh.strain(j,:) = voigt(strain)';
-
-        % TODO: remove after testing
-        vms(j) = von_mises(ccy');
     end
 end
 
@@ -193,13 +169,6 @@ for m = 1:num_meshes
         edsp = u(sctrB);
         edsp = reshape(edsp, 3, nn);
     
-        % [R,dRdparm] = nurbs_derivatives( [xi, eta],geo, sub_mesh );
-        % jmatrix = dRdparm*exyz(:,1:2); 
-        % dRdx =  jmatrix \ dRdparm;              
-        % f = edsp(1:2, :) * dRdx' + eye(2);   
-        % [ pk2, ~ ] = constitutive_relation( sub_mesh.dim, mat, f );
-        % cauchy = pk2cauchy( pk2, f );
-
         [N,ders] = nurbs_derivatives( [xi, eta],geo, mesh );
         jmatrix = ders*exyz(:,1:2); %Because the mapping is in 2D
         ders =  jmatrix \ ders;      
@@ -215,9 +184,6 @@ for m = 1:num_meshes
         [ pk2, ~] = material_CSWP_PK2_hyperelasticity( 3, mat, F );
         cauchy = pk2cauchy(pk2, F);
 
-
-
-        
         % Assign global vmesh Index j
         j = j + 1;
         vmesh.displacement(j,:) = edsp * N';

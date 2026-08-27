@@ -1,5 +1,4 @@
 function tri_mesh = build_visual_mesh_suf_3d( num1, num2)
-% TODO: Update Doc
 %-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%
 %  Build parametric triangle structure for visualization
 %  Input:

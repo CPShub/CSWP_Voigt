@@ -1,6 +1,47 @@
 function all_nurbs = geo_circle_with_square(center, radius, side_length, varargin)
-    % TODO: Doc
-    % TODO: Comments in english
+% This function generates a circular composit mesh with a square at the
+% center. This formulation can resolve singularities based on geometry and
+% is recommended instead of `geo_circle()`.
+% Input:
+    % center        - (1,2) vectoring containing center location
+    % radius        - Radius of the circle
+    % side_length   - Side-Length of the inner square
+% Output:
+    % all_nurbs     - geometry structure with defined nurb vectors
+% ------------------------------------------------------------------------ 
+% Copyright (C) 2026 Tobias Henkels and Juan C. Alzate Cobo. 
+% 
+% This code is an extension and modification of the NLIGA framework 
+% originally developed by Du et al. (2020). 
+% 
+% ------------------------------------------------------------------------ 
+% CITATION: 
+% If you use this code for your research, please cite: 
+% 
+% (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+% warping problem for hyperelastic beams: An efficient formulation in 
+% Voigt notation", DOI: 10.48550/arXiv.2604.12886 
+% (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
+% framework for nonlinear isogeometric analysis", Computer Aided 
+% Geometric Design, 80, 101869, 2020. 
+% https://doi.org/10.1016/j.cagd.2020.101869 
+% ------------------------------------------------------------------------ 
+% LICENSE: 
+% This function is free software: you can redistribute it and/or modify it 
+% under the terms of the GNU General Public License as published by the 
+% Free Software Foundation, either version 3 of the License, or (at your 
+% option) any later version. (GPL-3.0-or-later) 
+% 
+% This program is distributed in the hope that it will be useful, but 
+% WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+% or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
+% for more details. 
+% ------------------------------------------------------------------------ 
+% CONTACT: 
+% - Tobias Henkels (tobias.henkels@stud.tu-darmstadt.de) 
+% - Juan C. Alzate Cobo (alzate@cps.tu-darmstadt.de) 
+% Technische Universität Darmstadt, Germany 
+% ------------------------------------------------------------------------
 
     if nargin < 3
         center = [0, 0];
@@ -9,7 +50,7 @@ function all_nurbs = geo_circle_with_square(center, radius, side_length, varargi
         show_plot_bool = 0;
     end
     
-    % Handle Additional Geometry generation and visualization options
+    % Handle additional geometry generation and visualization options
     if ~isempty(varargin)
         options = varargin{1};
     
@@ -46,92 +87,92 @@ function all_nurbs = geo_circle_with_square(center, radius, side_length, varargi
     mid_diag = (xc + s) / 2;
     all_nurbs = cell(1, 5); 
     
-    %  PATCH 1: Unten (Süden)
-    %  U -> läuft nach rechts (+X) | V -> läuft nach oben (+Y, von außen nach innen)
+    % PATCH 1: Bottom (South)
+    % U -> runs to the right (+X) | V -> runs upward (+Y, from outside to inside)
     coefs1 = zeros(4,3,3);
-    % v = 1: Äußerer Kreisbogen unten
+    % v = 1: Outer circular arc
     coefs1(1:2, 1, 1) = [-xc, -yc];          
     coefs1(1:2, 2, 1) = [0, -r_tangent];     
     coefs1(1:2, 3, 1) = [xc, -yc];
-    % v = 2: Mittelschicht
+    % v = 2: Intermediate layer
     coefs1(1:2, 1, 2) = [-mid_diag, -mid_diag]; 
     coefs1(1:2, 2, 2) = [0, -mid_r];         
     coefs1(1:2, 3, 2) = [mid_diag, -mid_diag];
-    % v = 3: Innenkante zum Quadrat
+    % v = 3: Inner edge of the square
     coefs1(1:2, 1, 3) = [-s, -s];            
     coefs1(1:2, 2, 3) = [0, -s];             
     coefs1(1:2, 3, 3) = [s, -s];
     
     w_mat1 = ones(3,3); 
-    w_mat1(2,1) = w; % Gewicht am Scheitelpunkt des Bogens (v=1, u=2)
+    w_mat1(2,1) = w; % Weight at the apex of the arc (v=1, u=2)
     all_nurbs{1} = finalize_patch(coefs1, w_mat1, center, degelev, Ref);
     
     
-    %  PATCH 2: Rechts (Osten)
-    % U -> läuft nach rechts (+X, von innen nach außen) | V -> läuft nach oben (+Y)
+    % PATCH 2: Right (East)
+    % U -> runs to the right (+X, from inside to outside) | V -> runs upward (+Y)
     coefs2 = zeros(4,3,3);
-    % u = 1: Innenkante zum Quadrat (links)
+    % u = 1: Inner edge of the square (left)
     coefs2(1:2, 1, 1) = [s, -s];             
     coefs2(1:2, 1, 2) = [s, 0];              
     coefs2(1:2, 1, 3) = [s, s];
-    % u = 2: Mittelschicht
+    % u = 2: Intermediate layer
     coefs2(1:2, 2, 1) = [mid_diag, -mid_diag]; 
     coefs2(1:2, 2, 2) = [mid_r, 0];         
     coefs2(1:2, 2, 3) = [mid_diag, mid_diag];
-    % u = 3: Äußerer Kreisbogen rechts
+    % u = 3: Outer circular arc on the right
     coefs2(1:2, 3, 1) = [xc, -yc];           
     coefs2(1:2, 3, 2) = [r_tangent, 0];      
     coefs2(1:2, 3, 3) = [xc, yc];
     
     w_mat2 = ones(3,3); 
-    w_mat2(3,2) = w; % Gewicht am Scheitelpunkt des Bogens (v=2, u=3)
+    w_mat2(3,2) = w; % Weight at the apex of the arc (v=2, u=3)
     all_nurbs{2} = finalize_patch(coefs2, w_mat2, center, degelev, Ref);
     
     
-    %  PATCH 3: Oben (Norden)
-    %  U -> läuft nach rechts (+X) | V -> läuft nach oben (+Y, von innen nach außen)
+    % PATCH 3: Top (North)
+    % U -> runs to the right (+X) | V -> runs upward (+Y, from inside to outside)
     coefs3 = zeros(4,3,3);
-    % v = 1: Innenkante zum Quadrat
+    % v = 1: Inner edge of the square
     coefs3(1:2, 1, 1) = [-s, s];             
     coefs3(1:2, 2, 1) = [0, s];              
     coefs3(1:2, 3, 1) = [s, s];
-    % v = 2: Mittelschicht
+    % v = 2: Intermediate layer
     coefs3(1:2, 1, 2) = [-mid_diag, mid_diag];  
     coefs3(1:2, 2, 2) = [0, mid_r];          
     coefs3(1:2, 3, 2) = [mid_diag, mid_diag];
-    % v = 3: Äußerer Kreisbogen oben
+    % v = 3: Outer circular arc on the top
     coefs3(1:2, 1, 3) = [-xc, yc];           
     coefs3(1:2, 2, 3) = [0, r_tangent];      
     coefs3(1:2, 3, 3) = [xc, yc];
     
     w_mat3 = ones(3,3); 
-    w_mat3(2,3) = w; % Gewicht am Scheitelpunkt des Bogens (v=3, u=2)
+    w_mat3(2,3) = w; % Weight at the apex of the arc (v=3, u=2)
     all_nurbs{3} = finalize_patch(coefs3, w_mat3, center, degelev, Ref);
     
     
-    %  PATCH 4: Links (Westen)
-    %  U -> läuft nach rechts (+X, von außen nach innen) | V -> läuft nach oben (+Y)
+    % PATCH 4: Left (West)
+    % U -> runs to the right (+X, from outside to inside) | V -> runs upward (+Y)
     coefs4 = zeros(4,3,3);
-    % u = 1: Äußerer Kreisbogen links
+    % u = 1: Outer circular arc on the left
     coefs4(1:2, 1, 1) = [-xc, -yc];          
     coefs4(1:2, 1, 2) = [-r_tangent, 0];     
     coefs4(1:2, 1, 3) = [-xc, yc];
-    % u = 2: Mittelschicht
+    % u = 2: Intermediate layer
     coefs4(1:2, 2, 1) = [-mid_diag, -mid_diag]; 
     coefs4(1:2, 2, 2) = [-mid_r, 0];         
     coefs4(1:2, 2, 3) = [-mid_diag, mid_diag];
-    % u = 3: Innenkante zum Quadrat (rechts)
-    coefs4(1:2, 3, 1) = [-s, -s];            
-    coefs4(1:2, 3, 2) = [-s, 0];             
+    % u = 3: Inner edge of the square (right)
+    coefs4(1:2, 3, 1) = [-s, -s];             
+    coefs4(1:2, 3, 2) = [-s, 0];              
     coefs4(1:2, 3, 3) = [-s, s];
     
     w_mat4 = ones(3,3); 
-    w_mat4(1,2) = w; % Gewicht am Scheitelpunkt des Bogens (v=2, u=1)
+    w_mat4(1,2) = w; % Weight at the apex of the arc (v=2, u=1)
     all_nurbs{4} = finalize_patch(coefs4, w_mat4, center, degelev, Ref);
     
     
-    %  PATCH 5: Zentrales Quadrat
-    %  U -> läuft nach rechts (+X) | V -> läuft nach oben (+Y)
+    % PATCH 5: Central square
+    % U -> runs to the right (+X) | V -> runs upward (+Y)
     c_sq = zeros(4,3,3);
     x_vals = [-s, 0, s];
     y_vals = [-s, 0, s];

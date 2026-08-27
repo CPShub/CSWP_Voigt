@@ -1,5 +1,56 @@
 function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
-    
+    % This function computes the beam forces, moments and beam stiffness, 
+    % as well as the deformation solution sensitivities with regard to the 
+    % applied strain prescriptors from the deformation solution.
+    % Input:
+        % geo           - Employed IGA Geometry
+        % mesh          - Employed mesh 
+        % mat           - (Struct) containing material parameters
+        % eps0          - Vector containing the strain prescriptors
+        % k0            - Vector containing the twist prescriptors
+        % u             - Displacement solution vector
+        % K             - Tangent Stiffness matrix for displacement solution vector u  
+
+    % Output:
+        % n0            - (3,1) Beam forces
+        % m0            - (3,1) Beam moments
+        % C0            - (6,6) Beam stiffnesses
+        % uy_all        - Deformation solution sensitivities u,q
+    % ------------------------------------------------------------------------ 
+    % Copyright (C) 2026 Tobias Henkels and Juan C. Alzate Cobo. 
+    % 
+    % This code is an extension and modification of the NLIGA framework 
+    % originally developed by Du et al. (2020). 
+    % 
+    % ------------------------------------------------------------------------ 
+    % CITATION: 
+    % If you use this code for your research, please cite: 
+    % 
+    % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
+    % warping problem for hyperelastic beams: An efficient formulation in 
+    % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
+    % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
+    % framework for nonlinear isogeometric analysis", Computer Aided 
+    % Geometric Design, 80, 101869, 2020. 
+    % https://doi.org/10.1016/j.cagd.2020.101869 
+    % ------------------------------------------------------------------------ 
+    % LICENSE: 
+    % This function is free software: you can redistribute it and/or modify it 
+    % under the terms of the GNU General Public License as published by the 
+    % Free Software Foundation, either version 3 of the License, or (at your 
+    % option) any later version. (GPL-3.0-or-later) 
+    % 
+    % This program is distributed in the hope that it will be useful, but 
+    % WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+    % or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
+    % for more details. 
+    % ------------------------------------------------------------------------ 
+    % CONTACT: 
+    % - Tobias Henkels (tobias.henkels@stud.tu-darmstadt.de) 
+    % - Juan C. Alzate Cobo (alzate@cps.tu-darmstadt.de) 
+    % Technische Universität Darmstadt, Germany 
+    % ------------------------------------------------------------------------
+
     
     % Integration over the whole domain
     gp_x = mesh.p+1;        % number of integration points in x-direction
@@ -118,19 +169,17 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
             % Extract the relevant columns of the material stiffness matrix
             C_red = dtan(:, [6, 5, 3]); %dtan(:, [3,5,6]);
     
-            % compute the h,p operators for all variations of p in [eps0, k0]
-            % Assemble them directly into the H operator
-            H_eps0 = F';
             % Compute explicit strain derivatives
             dkdq_cross_x = [0,x(3),-x(2); -x(3), 0, x(1); x(2), -x(1), 0];
             deps0k0_dq = [eye(3,3), dkdq_cross_x];
 
-
-            H_k0 = F' * dkdq_cross_x;%cross(eye(3,3), repmat(x, 1,3)); %TODO: vectorize this!
+            % compute the h,p operators for all variations of p in [eps0, k0]
+            % Assemble them directly into the H operator
+            H_eps0 = F';
+            H_k0 = F' * dkdq_cross_x;
             H = [H_eps0, H_k0];
-    
+
             % Compute Combinations of strain prescriptor derivatives
-            % TODO: Vectorize this!
             dkdq_cross_F1 = [zeros(3,3), cross(eye(3,3), repmat(F(:,1), 1, 3))];
             dkdq_cross_F2 = [zeros(3,3), cross(eye(3,3), repmat(F(:,2), 1, 3))];
             dkdq_cross_F3 = [zeros(3,3), cross(eye(3,3), repmat(F(:,3), 1, 3))];
@@ -142,10 +191,6 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
             E_v_0_q(3, :) = F(:, 3)' * deps0k0_dq;
             E_v_0_q(5, :) = F(:, 2)' * deps0k0_dq;
             E_v_0_q(6, :) = F(:, 1)' * deps0k0_dq;
-
-
-            %%%%%%%%%%%%%%%%%%%%%%%
-            % TODO: Vectorize this!
 
             BN = zeros(6, nn*3);
             BN_6_q = zeros(nn*3, 6);
@@ -167,14 +212,7 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
                 BN_3_q(i*3-2:i*3, :) = -N(i) * (dkdq_cross_F3 + cross(repmat(k0, 1, 6), deps0k0_dq));
             end
     
-            %%%%%%%%%%%%%%%%%%%%%%%
-    
-    
-            % Compute R_y_partial_all using reduced variables
-            % TODO: Check if this summation is correct
-            %R_y_partial_all = BN' * C_red * H + (BN_3_q * S_red(1) + BN_5_q * S_red(2) + BN_6_q * S_red(3));
-
-            % Code in Non-Reduced version
+            % Compute R_y_partial_all
             R_y_partial_all = BN' * dtan * E_v_0_q + (BN_3_q * pk2(3) + BN_5_q * pk2(5) + BN_6_q * pk2(6));
     
             % Combine with S_reduced and integrate
@@ -200,7 +238,8 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
     m0 = stress_resultant(4:6)';
 
     % Second integration to compute the C0 Entries in one integration run
-    C0 = zeros(6,6); %TODO: implement this following eq. 132
+    % according to (eq. 141)
+    C0 = zeros(6,6); 
 
     for el = 1:mesh.nElems                % loop over elements
         sctr = mesh.elNodeCnt(el,:);       % element control points index
@@ -219,9 +258,7 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
         elCpts(:,1:3)=elCpts0(:,1:3)+elDisp'; %here we actualize x+du
 
         % Element Displacement Sensitivity over q (always last dimension)
-        elY = uy_all(sctrB, :);
         elY = reshape(uy_all(sctrB, :), dof, nn, 6);
-
 
         for ipt = 1:size(gp,1)            % loop over integration points
             pt = gp(ipt,:);      % reference parametric coordinates for each integration point
@@ -254,23 +291,26 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
                 [pk2, dtan] = material_CSWP_PK2_hyperelasticity(dof, mat, F);
             end
 
-            % Extract the relevant stress components for PK2_reduced
+            % Extract the relevant stress components for PK2_reduced 
+            % (eq. 127)
             S_red = [pk2(6); pk2(5); pk2(3)];
 
-            % Extract the relevant columns of the material stiffness matrix
+            % Extract the relevant columns of the reduced material stiffness matrix
+            % (eq. 124)
             C_red = dtan(:, [6, 5, 3]);
 
             % Compute the E_voigt components over q=1:6
+            % (eq. 130, 123)
             H_eps0 = F';
             dkdq_cross_x = [0,x(3),-x(2); -x(3), 0, x(1); x(2), -x(1), 0];
             deps0k0_dq = [eye(3,3), dkdq_cross_x];
-            H_k0 = F' * dkdq_cross_x;%cross(eye(3,3), repmat(x, 1,3)); %TODO: vectorize this!
+            H_k0 = F' * dkdq_cross_x;
             H = [H_eps0, H_k0];
 
-            % Compute BN
+            % Compute BN matrix entries (eq. 88)
             BN = zeros(6, nn*3);
 
-            % Indicees for blocks
+            % Indices for blocks
             idx1 = 1:3:3*nn;
             idx2 = 2:3:3*nn;
             idx3 = 3:3:3*nn;
@@ -315,6 +355,7 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
             deps0k0_dq = [eye(3,3), dkdq_cross_x];
 
             % Compute the E,q^{0} operator
+            % (eq. 135)
             E_v_0_q = zeros(6,6);
 
             % Only fill the 3rd, 5th and 6th layers
@@ -322,9 +363,8 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
             E_v_0_q(5, :) = F(:, 2)' * deps0k0_dq;
             E_v_0_q(6, :) = F(:, 1)' * deps0k0_dq;
 
-            % Compute the uy-related component of EE_v from uy_all
-            % TODO: Check if this is correct
-            % Eq. 137 from (1)
+            % Compute the u_{,y}-related component of EE_v from uy_all
+            % (eq. 137)
             EE_v = E_v_0_q + BN * uy_all(sctrB, :);
 
             % Determine local u_q and u_q_alpha
@@ -332,7 +372,7 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
             u_q_alpha1 = sum(ders(1, :) .* elY, 2);
             u_q_alpha2 = sum(ders(2, :) .* elY, 2);
 
-            % Assemble F_q following eq. 55 in (1)
+            % Assemble F_q following eq. 55
             k_cross_uq = cross(repmat(k0,1,1,6), u_q);
             F_q_imp = [u_q_alpha1, u_q_alpha2, k_cross_uq];
             F_q_exp = zeros(3,3,6);
@@ -341,40 +381,31 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
             F_q = F_q_imp + F_q_exp;
             F_q_T = permute(F_q, [2, 1, 3]);
 
-            % TODO: Write correct equation
             % Compute a_p Term following eq. 13 in (1)
-            %a_p = [eye(3,3), cross(eye(3,3), repmat(k0, 1, 3))];
             a_p = [eye(3,3), cross(eye(3,3), repmat(x, 1, 3))];
 
             % Compute the second derivative of h for all q=1:6 and p=1:6
             % Add first component of HH
             HH1 = zeros(3,6,6);
-            % TODO: Vectorize & optimize this!
             for qqi = 1:6
                 HH1(:, :, qqi) = F_q_T(:,:,qqi) * a_p;
             end
 
-            % Add second component of HH
-            % TODO: Optimize and vectorize this!
+            % Add second component of HH (eq. 140)
             HH2 = zeros(3,6,6);
             for ppi = 4:6 % First 3 entries in dk0dq are 0 anyways
                 for qqi = 1:6
                     HH2(:, ppi, qqi) = F' * cross(dk0dq(:, ppi), u_q(:,1,qqi));
                 end
             end
-
-            % TODO: Check correct reshaping and optimize
+            
+            % Combine into HH expression
             HH = HH1 + HH2;
-            
-            % Re-Map from (3,6,6) to (18,6) -> Fold the second dimension
-            % into the first
-            %HH_flat = reshape(permute(HH, [2, 1, 3]), 6, 18)';
-            
-            % Finally assemble into Beam Stiffness Components
-            % TODO: Check and optimize!
+
+            % Finally assemble into Beam Stiffness Components (eq. 141)
             C0_partial_geo = reshape(pagemtimes(repmat(S_red', 1,1,6), HH), 6, 6);
             C0_partial_mat = H' * C_red' * EE_v;
-            C0_partial = C0_partial_mat + C0_partial_geo; %reshape(S_red' * reshape(HH, 3, 6*6), 6, 6);
+            C0_partial = C0_partial_mat + C0_partial_geo;
             C0 = C0 + fac * C0_partial;
         end
     end
