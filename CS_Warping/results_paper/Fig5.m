@@ -40,6 +40,13 @@
 % Technische Universität Darmstadt, Germany 
 % ------------------------------------------------------------------------
 
+% The following options may be chosen to reproduce the figures 5a and 5b:
+% (The current preset corresponds to Fig 5a)
+%           | cs_type   | eps0_case    | k0_case    | complex_case
+%   Fig 5a  | "square"  | 0           | 0           | 1
+%   Fig 4b  | "square"  | 0            | 0          1
+
+
 
 
 
@@ -53,8 +60,20 @@ eps0_case = 0;
 k0_case = 0;
 complex_case = 1;
 
-% Select the Crossection
-crossectional_type = "square";
+% Select the Cross-section
+%crossectional_type = "square";
+crossectional_type = "circle";
+
+% Select visualization options
+vis_beam_effects = 1;
+vis_beam_stiffnesses = 0;
+vis_simple_beam_stiffnesses = 0;
+show_errors = 1;
+
+% Select if files should be generated
+safe_files = 0;
+
+
 
 % Select material modeling index -> Execute testcase for every index
 %   - PK2 Formulations (110-119)
@@ -69,12 +88,6 @@ index_NH_pk1 = 10;  % Compressible Neo-Hooke with PK1
 index_NH_pk2 = 110;  % Compressible Neo-Hooke with PK2
 
 indexes = [index_SVK_pk1, index_SVK_pk2, index_MR_pk1, index_MR_pk2, index_NH_pk1, index_NH_pk2];
-
-% Visualisation options
-vis_beam_effects = 0;
-vis_beam_stiffnesses = 0;
-vis_simple_beam_stiffnesses = 0;
-show_errors = 1;
 
 % Programm options
 append_older_dataset = 0;
@@ -124,7 +137,9 @@ end
 if crossectional_type == "square"
     plate =  geo_square( [0,0], 1, 0);
 elseif crossectional_type == "circle"
-    plate = geo_circle( [0, 0], 1);
+    cs_options = {};
+    cs_options.Refinement = 3;
+    plate = geo_circle_with_square( [0,0], 1, 0.6, cs_options);
 else
     error("No matching crossectional shape selected")
 end
@@ -149,6 +164,13 @@ l_start = 1;
 
 k = length(indexes); % Number of Indizees to compute
 
+% Build iga mesh structure
+if crossectional_type == "circle"
+    % execute custom multi-mesh assembly
+    mesh = build_omesh(plate);
+else 
+    mesh = build_iga_mesh( plate );
+end
 
 % Preallocate space to store computed variables
 if append_older_dataset
@@ -157,12 +179,13 @@ if append_older_dataset
     l_start = size(nl_data.n0, 3) + 1;
 else
     nl_data.compute_time = zeros(l, k);
-    nl_data.coords_def = zeros(3,64,l, k);
+    nl_data.coords_def = zeros(3,mesh.nCpts,l, k);
     nl_data.n0 = zeros(3,1,l, k);
     nl_data.m0 = zeros(3,1,l, k);
     nl_data.C0 = zeros(6,6,l, k);
-    nl_data.u = zeros(198, l, k);
-    nl_data.k = zeros(198, 198, l, k);
+    s_u = 3*mesh.nCpts+6;
+    nl_data.u = zeros(s_u, l, k);
+    nl_data.k = zeros(s_u, s_u, l, k);
     nl_data.r = zeros(20, l, k); % Reserve 20 Rows for residuals for a load-step
 end
 
@@ -176,13 +199,7 @@ for i = 1:l
 
     eps0 = loadcase(1:3, i);
     k0 = loadcase(4:6, i);
-    
-    % Build iga mesh structure
-    mesh = build_iga_mesh( plate );
-    
-    % Build four edges
-    curve = extract_iga_boundary(mesh);
-    
+
     l_index = l_start + (i - 1);
     disp("(" + num2str(i / l * 100) + " %) Computing for eps0/k0: " + num2str([eps0; k0]'))
     for j = 1:k
@@ -254,7 +271,7 @@ C66_NH_pk2 = reshape(nl_data.C0(6,6,:,6), [], 1);
 
 
 % save data tables
-if save_tables_eps0== 1
+if safe_files && eps0_case
     T = array2table([xx', ...
         n3_SVK_pk1, n3_SVK_pk2, ...
         n3_MR_pk1, n3_MR_pk2, ...
@@ -272,7 +289,7 @@ if save_tables_eps0== 1
     writetable(T,'PAPER_v03_N3_C33.csv')
 end
 
-if save_tables_k03 == 1
+if safe_files && k0_case
     T = array2table([xx', ...
         m3_SVK_pk1, m3_SVK_pk2, ...
         m3_MR_pk1, m3_MR_pk2, ...
@@ -290,7 +307,7 @@ if save_tables_k03 == 1
     writetable(T,'PAPER_k03_m3_C66.csv')
 end
 
-if save_table_complex == 1
+if safe_files && complex_case
     T = array2table([xx', ...
         n3_SVK_pk1, n3_SVK_pk2, ...
         n3_MR_pk1, n3_MR_pk2, ...
@@ -325,11 +342,11 @@ end
 if show_errors == 1
     % Compare the Errors in C0, N0 and M0 Computation between First and
     % second index (PK1 vs PK2)
-    disp("Error C0: ")
+    disp("Error C0 (PK1 - PK2): ")
     disp(nl_data.C0(:,:,1,1) - nl_data.C0(:,:,1,2));
-    disp("Error N0: ")
+    disp("Error N0 (PK1 - PK2): ")
     disp(nl_data.n0(:,:,1,1) - nl_data.n0(:,:,1,2));
-    disp("Error M0: ")
+    disp("Error M0: (PK1 - PK2): ")
     disp(nl_data.m0(:,:,1,1) - nl_data.m0(:,:,1,2));
 end
 

@@ -1,13 +1,13 @@
 # CSWP-Voigt - The Cross Sectional Warping Problem in Voigt notation 
 
-This repository accompanies the publication [["The cross-sectional warping problem for hyperelastic beams: An efficient formulation in Voigt notation"](https://arxiv.org/abs/2604.12886)] and provides the source code and analysis environments for the results presented therein. 
+This repository accompanies the publication [["The cross-sectional warping problem for hyperelastic beams: A compact formulation in Voigt notation"](https://arxiv.org/abs/2604.12886)] and provides the source code and analysis environments for the results presented therein. 
 
 CSWP-Voigt is an extension and modification of the NLIGA framework originally developed by Du et al. (2020). If you intend to use this software, please give credit by citing the following articles:
 
 **Article 1 (ours)**
 ```bibtex
 @unpublished{AlzateCobo2026,
-    title = {The cross-sectional warping problem for hyperelastic beams: An efficient formulation in Voigt notation},
+    title = {The cross-sectional warping problem for hyperelastic beams: A compact formulation in Voigt notation},
     author = {Alzate Cobo, Juan C. and Henkels, Tobias and Weeger, Oliver},
     note = {Preprint available under url},
     year = {2026},
@@ -78,36 +78,37 @@ Examples of potential usages can be found in the folders `CS_Warping/demos` as w
 eps0 = [0, 0, 0.1]';
 k0 = [0, 0, 0]';
 
+
 % Define Element type, Safe File and Boundary conditions
 eltype = 30; % 30- CSWP element
 filename = 'DEMO_Beam_Effects';
 fname = get_output_file_name(filename);
 fout = fopen(fname,'w'); 
-dbc = []; % Dirichlet boundary conditions
-tbc = []; % Von Neumann boundary conditions
+dbc =[]; % Dirichlet boundary conditions
+tbc=[]; % Von Neumann boundary conditions
 
 % Define Material, Material Model Type, Geometry, Mesh
 mat = default_mat();
 mat.index = 114; % SVK with PK2 / Alternatives see "default_mat()"
 geo = geo_square([0,0], 1);
-mesh = build_iga_mesh(geo);
+mesh = build_iga_mesh( geo );
+
 
 % Solve the NLIGA simulation
 nl_return = nliga_returns(eltype, geo, mesh, mat, dbc, tbc, fout, eps0, k0);
 u = nl_return.u; % Solution displacement vector
 k = nl_return.k; % Solution stiffness matrix
 
-% 1. Compute the Beam Forces acting on the cross-section
-[forces, moments] = beam_forces(geo, mesh, mat, eps0, k0, u);
+% Compute the Beam Forces and Moments acting on the cross-section as well 
+% as the deformation solution sensitivities u,q and the Beam Stiffness Matrix 
+[forces, moments, stiffness, sensitivities] = beam_effects(geo, mesh, mat, eps0, k0, u, k);
+
 disp("Forces in [x,y,z]: ")
 disp(forces);
 disp("Moments in [x,y,z]: ")
 disp(moments);
-
-% 2. Compute the Beam Stiffness Matrix (Sensitivity of Forces and Moments)
-[C0] = beam_stiffness(geo, mesh, mat, eps0, k0, u, k);
 disp("Beam Stiffness Matrix [6,6]: ")
-disp(C0);
+disp(stiffness);
 ```
 
 ### Expected Output
@@ -124,15 +125,16 @@ Forces in [x,y,z]:
 
 Moments in [x,y,z]: 
    1.0e-15 *
-    0.1735   -0.2186         0
+
+    0.6176   -0.6627         0
 
 Beam Stiffness Matrix [6,6]: 
    84.3096   -0.0000         0         0         0    0.0000
    -0.0000   84.3096         0         0         0   -0.0000
          0         0  273.7303    0.0000   -0.0000         0
-         0         0    0.0000   21.3690   -0.0000         0
-         0         0   -0.0000    0.0000   21.3690         0
-   -0.0000    0.0000         0         0         0   13.2822
+         0         0    0.0000   21.3690    0.0000         0
+         0         0   -0.0000   -0.0000   21.3690         0
+   -0.0000   -0.0000         0         0         0   13.2822
 ```
 
 

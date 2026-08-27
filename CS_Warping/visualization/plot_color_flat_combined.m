@@ -114,8 +114,8 @@ if isfield(options, "cdata_mmin")
     cdata_mmin = options.cdata_mmin;
     cdata_mmax = options.cdata_mmax;
 else
-    cdata_mmin = 0;
-    cdata_mmax = 0;
+    cdata_mmin = -1;
+    cdata_mmax = 1;
 end
 
 if isfield(options, "diagonal")
@@ -142,7 +142,7 @@ cb_labels = {'$u_1$ in mm'; '$u_2$ in mm'; '$u_3$ in mm';
     'von Mises in GPa'};
 titles = {'u_1', 'u_2', 'u_3', 'u Magnitude', 
     'S_{11}', 'S_{22}', 'S_{12}', 'Mises'};
-labeloffset = [-2, -2, -1.5, -1, -1, -1, -1, 1.5];
+labeloffset = [-2, -2, -1.5, -1, -1, -1, -1, 0];
 
 % Create the figure
 f=figure;
@@ -153,7 +153,6 @@ if show_ticks
     ylabel('y');
 end
 axis equal;
-axis off;
 
 
 % Plot only one half each (trimAA, trimBB)for vmeshA and vmeshB
@@ -164,18 +163,23 @@ for j = 2:length(trims(1).vertices)
     
         % Draw the Undeformed Configuration (gray)
         if trimid <= 2
-            face = cell2mat(vmesh.face(1));
-            maxnum = max(max(face));
-            vertices = cell2mat(vmesh.vertices(1));
-            trivertex = vertices(1:maxnum,:);
+            %face = cell2mat(vmesh.face(1));
+            %maxnum = max(max(face));
+            vertices = vmesh.vertices{1};
+            %trivertex = vertices(1:maxnum,:);
             
-            len = length(trivertex);
-            p0 = fill(trivertex(:, 1), trivertex(:, 2), rand(len, 1));
-            set(p0, 'Faces', face)
+            len = length(vertices);
+
+            % Gray face color for undeformed Config
+            tri = delaunay(vertices(:, 1), vertices(:, 2));
+            p0 = trisurf(tri, vertices(:, 1), vertices(:, 2), zeros(len, 1), 'FaceColor', '#A19F99', 'EdgeColor', 'none');
+            view(2);
+            %p0 = fill(trivertex(:, 1), trivertex(:, 2), rand(len, 1));
+            %set(p0, 'Faces', face)
             
             % Update Face color to be light grey
-            set(p0,'FaceColor', '#A19F99');
-            set(p0,'EdgeColor','none');
+            %set(p0,'FaceColor', '#A19F99');
+            %set(p0,'EdgeColor','none');
             
             msize = get_visual_mesh_size(vmesh);
             axis(msize);
@@ -185,55 +189,64 @@ for j = 2:length(trims(1).vertices)
         else
             % Draw the Deformed Configuration (colored) for each load step
     
-            face = cell2mat(vmesh.face(j));
-            maxnum = max(max(face));
-            vertices = cell2mat(vmesh.vertices(j));
-            trivertex = vertices(1:maxnum,:);
-            displacement = cell2mat(vmesh.displacement(j));
-            stress = cell2mat(vmesh.stress(j));
+            %face = cell2mat(vmesh.face(j));
+            %maxnum = max(max(face));
+            vertices = vmesh.vertices{j};
+            %trivertex = vertices(1:maxnum,:);
+            displacement = vmesh.displacement{j};
+            stress = vmesh.stress{j};
             % flag - color map: 
             %   1-U1, 2-U2, 3-U3, 
             %   4-U magnitude, 
             %   5-S11, 6-S22, 7-S12, 
             %   8-mises
             if flag == 1
-                cdata = displacement(1:maxnum,1);
+                cdata = displacement(:,1);
             elseif flag == 2
-                cdata = displacement(1:maxnum,2);
+                cdata = displacement(:,2);
             elseif flag == 3
-                cdata = displacement(1:maxnum,3);
+                cdata = displacement(:,3);
             elseif flag == 4
-                cdata = sqrt(sum(displacement(1:maxnum, :).^2, 2));
+                cdata = sqrt(sum(displacement.^2, 2));
             elseif flag == 5
-                cdata = stress(1:maxnum,1);
+                cdata = stress(:,1);
             elseif flag == 6
-                cdata = stress(1:maxnum,2);
+                cdata = stress(:,2);
             elseif flag == 7
-                cdata = stress(1:maxnum,3);
+                cdata = stress(:,3);
             elseif flag == 8
-                cdata = von_mises( stress(1:maxnum,:) );
+                cdata = von_mises( stress );
             end
         
+            % triangulate vertices for visualization
+            tri = delaunay(vertices(:, 1), vertices(:, 2));
+
+            len = length(vertices);
+
             % Add the visualized data
-            p = patch(trivertex(:, 1), trivertex(:, 2), rand(length(trivertex), 1));
-            set(p, 'Faces', face);
-            set(p,'FaceColor','interp','FaceVertexCData',cdata);
-            set(p,'EdgeColor','none');
+            p = trisurf(tri, vertices(:, 1), vertices(:, 2), zeros(len, 1), cdata, 'FaceColor', 'interp', 'EdgeColor', 'none');
+            view(2);
+            %p = patch(trivertex(:, 1), trivertex(:, 2), rand(length(trivertex), 1));
+            %set(p, 'Faces', face);
+            %set(p,'FaceColor','interp','FaceVertexCData',cdata);
+            %set(p,'EdgeColor','none');
         end
     end
 
     % add Title and colorbar
-    [mmin, mmax] = bounds(cdata);
+    cbounds = get(gca, "CLim");%bounds(cdata);
+    mmin = cbounds(1);
+    mmax = cbounds(2);
     if mmin == mmax
         mmin = -1;
         mmax = 1;
     end
     
     % Handel Singularity of the triangular elements (i.e. circle center)
-    if cdata_mmin ~= 0 && cdata_mmax ~= 0
-        mmin = cdata_mmin;
-        mmax = cdata_mmax;
-    end
+    %if cdata_mmin ~= 0 && cdata_mmax ~= 0
+    %    mmin = cdata_mmin;
+    %    mmax = cdata_mmax;
+    %end
 
     mmid = round((mmax - mmin) / 2 + mmin);
 
@@ -269,6 +282,7 @@ end
 pause(2.0);
 
 
+axis off
 
 % Add a Diagonal Divide
 xLimits = get(gca,'XLim');  % Get the range of the x axis
@@ -316,12 +330,10 @@ end
 
 % Write the associated Names
 if show_A_text
-    A_text_pos = A_text_pos .* l;
-    text(A_text_pos(1), A_text_pos(2), A_text_text, 'FontSize', A_text_font, 'Color', A_text_color, 'FontWeight', 'bold', 'Interpreter', 'latex');
+    text(A_text_pos(1) * l(1), A_text_pos(2) * l(2), A_text_text, 'FontSize', A_text_font, 'Color', A_text_color, 'FontWeight', 'bold', 'Interpreter', 'latex');
 end
 if show_B_text
-    B_text_pos = B_text_pos .* l;
-    text(B_text_pos(1), B_text_pos(2), B_text_text, 'FontSize', B_text_font, 'Color', B_text_color, 'FontWeight', 'bold', 'Interpreter', 'latex');
+    text(B_text_pos(1) * l(1), B_text_pos(2) * l(2), B_text_text, 'FontSize', B_text_font, 'Color', B_text_color, 'FontWeight', 'bold', 'Interpreter', 'latex');
 end
 
 end

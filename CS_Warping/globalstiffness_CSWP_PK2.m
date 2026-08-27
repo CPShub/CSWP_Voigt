@@ -50,7 +50,7 @@ function [ Kglob, Rglob ] = globalstiffness_CSWP_PK2( eltype, geo, mesh, mat, u 
 % ------------------------------------------------------------------------
 
 
-if eltype == 30 %More element types cmay come in the future
+if eltype == 30 %More element types may come in the future
     dof = 3;
 end
 gp_x = mesh.p+1;        % number of integration points in x-direction
@@ -68,6 +68,7 @@ Rmu = zeros(3,1);
 eps0 = curtime*eps0;
 k0 = curtime*k0;
 
+e = eye(3);
 %This is the skew symmetric cross-product matrix
 k0x = [    0   -k0(3)   k0(2);
            k0(3)     0   -k0(1);
@@ -106,9 +107,9 @@ for el = 1:mesh.nElems                % loop over elements
         fac = j1 *j2 * wt;        
         ders3D = zeros(3,size(elCpts,1));
         ders3D(1:2,:) = ders;
-        e = eye(3);
         x = N.*elCpts(:,1:dof)';
         x = sum(x,2);
+
         x0 = N.*elCpts0(:,1:dof)';
         x0 = sum(x0,2);
         [M,m,Theta] = GeometricalTerms(x0,x,mu,e);
@@ -123,7 +124,8 @@ for el = 1:mesh.nElems                % loop over elements
   
         for i = 1:nn
             % Corresponds to Eq. 52 in (1)
-            BN(:,i*3-2:i*3) = [ F(1,1)*ders(1,i)     F(2,1)*ders(1,i)      F(3,1)*ders(1,i);
+            BN(:,i*3-2:i*3) = [ 
+                F(1,1)*ders(1,i)     F(2,1)*ders(1,i)      F(3,1)*ders(1,i);
                 F(1,2)*ders(2,i)     F(2,2)*ders(2,i)      F(3,2)*ders(2,i);
                 N(i)*(k0(3)*F(2,3)-k0(2)*F(3,3))    N(i)*(k0(1)*F(3,3)-k0(3)*F(1,3))       N(i)*(k0(2)*F(1,3)-k0(1)*F(2,3)) ;
                 F(1,1)*ders(2,i)+ F(1,2)*ders(1,i)  F(2,1)*ders(2,i)+F(2,2)*ders(1,i)   F(3,1)*ders(2,i)+F(3,2)*ders(1,i);

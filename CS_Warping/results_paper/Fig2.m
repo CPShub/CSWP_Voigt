@@ -36,16 +36,51 @@
 % ------------------------------------------------------------------------
 
 
-% Circle
-figure
-geo_circle([0,0], 1)
+% Toggle to save the files directly into "output"
+save_file = 1;
+
+
+
+
+
+% O-Mesh Circle
+cs_options = {};
+cs_options.Refinement = 3;
+cs_options.show_plot = 1;
+
+plate = geo_circle_with_square( [0,0], 1, 0.6, cs_options);
 axis off
 xlim([-1.1, 1.1])
 ylim([-1.1, 1.1])
 
+% Assign the correct face color for the multi-patch
+hSurfs = findobj(gcf, 'Type', 'surface');
+delete(findobj(gcf, 'Type', 'light'));
+set(hSurfs, 'FaceColor', 'flat');
+set(hSurfs, 'FaceColor', "#aeaca4")
+
+% Safe the File
+if save_file == 1
+    savefile_name = 'RESULT_CircleMesh.png';
+    savefile_path = fullfile(pwd, 'output', savefile_name)
+    exportgraphics(gcf,savefile_path,'Resolution',300);
+end
+
 % Square
+cs_options = {};
+cs_options.RefinementX = 9;
+cs_options.RefinementY = 9;
+cs_options.show_plot = 1;
+
 figure
-geo_square([0,0],1,1)
+geo_square([0,0],1,cs_options)
 axis off
 xlim([-0.6, 0.6])
 ylim([-0.6, 0.6])
+
+% Safe the File
+if save_file == 1
+    savefile_name = 'RESULT_SquareMesh.png';
+    savefile_path = fullfile(pwd, 'output', savefile_name)
+    exportgraphics(gcf,savefile_path,'Resolution',300);
+end

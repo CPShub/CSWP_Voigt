@@ -44,7 +44,7 @@ function [trimA, trimB] = trim_patch_by_line(vmesh, ptA, ptB)
 
 d = ptB - ptA;
 numSteps = length(vmesh.vertices);
-e = 1e-4;
+e = 0;%1e-6;
 
 trimA.vertices = cell(1, numSteps);
 trimA.face = cell(1, numSteps);
@@ -55,39 +55,46 @@ trimA.strain = cell(1, numSteps);
 trimB = trimA;
 
 for step = 1:numSteps
+    % sub-select only the first num1*num2 points WITHOUT the kntcrv-points
+    max_idx = size(vmesh.vertices{step},1) - size(vmesh.linmesh, 1);
     v_orig = vmesh.vertices{step};
-    f_orig = vmesh.face{step};
+    
+    v_orig_mesh = v_orig(1:max_idx, :);
+    v_orig_kntcrv = v_orig(max_idx+1:end, :);
+    
+    f_orig = vmesh.face{step};      % Related to only the first 1:max_idx vertices
+    
     disp_orig = vmesh.displacement{step};
     stress_orig = vmesh.stress{step};
     strain_orig = vmesh.strain{step};
 
-    v_rel = v_orig - ptA;
+    v_rel = v_orig(:, 1:2) - ptA;
     sideValues = d(1) * v_rel(:, 2) - d(2) * v_rel(:, 1);
 
     if step == 1
-        flagsA = ones(size(sideValues));
-        flagsB = ones(size(sideValues));
+        flagsA = true(size(sideValues));
+        flagsB = true(size(sideValues));
     else
-        flagsA = sideValues > e;
-        flagsB = sideValues < -e;
+        flagsA = sideValues >= e;
+        flagsB = sideValues <= -e;
     end
     
-    trimA.vertices{step} = v_orig;
-    trimB.vertices{step} = v_orig;
+    trimA.vertices{step} = v_orig(flagsA, :);
+    trimB.vertices{step} = v_orig(flagsB, :);
 
-    trimA.displacement{step} = disp_orig;
-    trimB.displacement{step} = disp_orig;
+    trimA.displacement{step} = disp_orig(flagsA, :);
+    trimB.displacement{step} = disp_orig(flagsB, :);
     
-    trimA.stress{step} = stress_orig;
-    trimB.stress{step} = stress_orig;
+    trimA.stress{step} = stress_orig(flagsA, :);
+    trimB.stress{step} = stress_orig(flagsB, :);
     
-    trimA.strain{step} = strain_orig;
-    trimB.strain{step} = strain_orig;
+    trimA.strain{step} = strain_orig(flagsA, :);
+    trimB.strain{step} = strain_orig(flagsB, :);
 
-    maskA = all(flagsA(f_orig), 2);
-    maskB = all(flagsB(f_orig), 2);
+    %maskA = all(flagsA(f_orig), 2);
+    %maskB = all(flagsB(f_orig), 2);
 
-    trimA.face{step} = f_orig(maskA, :);
-    trimB.face{step} = f_orig(maskB, :);
+    %trimA.face{step} = f_orig(maskA, :);
+    %trimB.face{step} = f_orig(maskB, :);
 end
 end

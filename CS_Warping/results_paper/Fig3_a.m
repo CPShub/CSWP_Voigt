@@ -52,7 +52,7 @@ crossectional_type = "square";
 x_axis_txt = "$k_{0_{" + num2str(d) + "}}$\,(Axial Twist)";
 
 % Options
-export_to_csv = 1;
+export_to_csv = 0;
 visualize_validation = 1;
 
 % Build geometrical model (See Arora)
