@@ -11,7 +11,7 @@
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -197,7 +197,7 @@ if visualize_validation == 1
     hold on;
     ylabel("Normalised Torsional Stiffness")
     xx = reshape(nl_data.k0(3,:),1,[]);
-    xlabel("K03")
+    xlabel('$\kappa_3$', 'interpreter', 'latex');
     for index = 1:k
         if mod(index, 2) == 1 % PK1
             yy_pk1 = reshape(nl_data.C0(6,6,:,index), 1, []);

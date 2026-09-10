@@ -1,7 +1,5 @@
 function [n0_entry] = beam_forces_entry(geo, mesh, mat, eps0, k0, u, ip)
-% Compute a beam force entry (as outlined in "Numerische Methoden zur 
-% Modellierung elastoplastischer Balken und ihre Anwendung auf 
-% periodische Gitterstrukturen", PhD Thesis by L. Herrnböck)
+% Compute a beam force entry. Equations reference (1).
 % Input:
 	% geo   - Employed IGA Geometry 
 	% mesh  - Employed mesh 
@@ -23,7 +21,7 @@ function [n0_entry] = beam_forces_entry(geo, mesh, mat, eps0, k0, u, ip)
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -115,6 +113,7 @@ for el = 1:mesh.nElems                % loop over elements
         end
 
         % Compute the beam force entry
+        % (eq. 18,19)
         term1 = deps0_dp * e(:,3)' + cross(dk0_dp, x) * e(:,3)';
         n0_entry_partial = tensorprod(pk1, term1, "all");
             

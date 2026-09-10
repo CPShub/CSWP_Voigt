@@ -27,7 +27,7 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
     % If you use this code for your research, please cite: 
     % 
     % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-    % warping problem for hyperelastic beams: An efficient formulation in 
+    % warping problem for hyperelastic beams: A compact formulation in 
     % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
     % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
     % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -65,7 +65,6 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
     stress_resultant = zeros(6,1);
    
     dk0dq = [zeros(3,3), eye(3,3)];
-    deps0dq = [eye(3,3), zeros(3,3)];
     
     % First Integration to Compute the Stress Resultants n0, m0 and the Displacement
     % Sensitivites u,y
@@ -115,59 +114,10 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
             elseif (mat.index >= 110 && mat.index < 120) % Formulation with PK2
                 [pk2, dtan] = material_CSWP_PK2_hyperelasticity(dof, mat, F);
             end
-    
-            % % Compute BN
-            % BN = zeros(6, nn*3);
-            % 
-            % % Indicees for blocks
-            % idx1 = 1:3:3*nn;
-            % idx2 = 2:3:3*nn;
-            % idx3 = 3:3:3*nn;
-            % 
-            % C3 = [ (k0(3)*F(2,3)-k0(2)*F(3,3)), (k0(1)*F(3,3)-k0(3)*F(1,3)), (k0(2)*F(1,3)-k0(1)*F(2,3)) ];
-            % C5 = [ (k0(3)*F(2,2)-k0(2)*F(3,2)), (k0(1)*F(3,2)-k0(3)*F(1,2)), (k0(2)*F(1,2)-k0(1)*F(2,2)) ];
-            % C6 = [ (k0(3)*F(2,1)-k0(2)*F(3,1)), (k0(1)*F(3,1)-k0(3)*F(1,1)), (k0(2)*F(1,1)-k0(1)*F(2,1)) ];
-            % 
-            % 
-            % % Row 1
-            % BN(1, idx1) = F(1,1)*ders(1,:); 
-            % BN(1, idx2) = F(2,1)*ders(1,:); 
-            % BN(1, idx3) = F(3,1)*ders(1,:);
-            % 
-            % % Row 2
-            % BN(2, idx1) = F(1,2)*ders(2,:); 
-            % BN(2, idx2) = F(2,2)*ders(2,:); 
-            % BN(2, idx3) = F(3,2)*ders(2,:);
-            % 
-            % % Row 3
-            % BN(3, idx1) = C3(1)*N;          
-            % BN(3, idx2) = C3(2)*N;          
-            % BN(3, idx3) = C3(3)*N;
-            % 
-            % % Row 4
-            % BN(4, idx1) = F(1,1)*ders(2,:) + F(1,2)*ders(1,:);
-            % BN(4, idx2) = F(2,1)*ders(2,:) + F(2,2)*ders(1,:);
-            % BN(4, idx3) = F(3,1)*ders(2,:) + F(3,2)*ders(1,:);
-            % 
-            % % Row 5
-            % BN(5, idx1) = C5(1)*N + F(1,3)*ders(2,:);
-            % BN(5, idx2) = C5(2)*N + F(2,3)*ders(2,:);
-            % BN(5, idx3) = C5(3)*N + F(3,3)*ders(2,:);
-            % 
-            % % Row 6
-            % BN(6, idx1) = F(1,3)*ders(1,:) + C6(1)*N;
-            % BN(6, idx2) = F(2,3)*ders(1,:) + C6(2)*N;
-            % BN(6, idx3) = F(3,3)*ders(1,:) + C6(3)*N;
-            % 
-    
-            % Compute Derivatives of BN wrt q
-            R_y_partial_all = zeros(nnElem, 6);
             
             % Extract the relevant stress components for PK2_reduced
+            % (eq. 125)
             S_red = [pk2(6); pk2(5); pk2(3)];
-    
-            % Extract the relevant columns of the material stiffness matrix
-            C_red = dtan(:, [6, 5, 3]); %dtan(:, [3,5,6]);
     
             % Compute explicit strain derivatives
             dkdq_cross_x = [0,x(3),-x(2); -x(3), 0, x(1); x(2), -x(1), 0];
@@ -175,6 +125,7 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
 
             % compute the h,p operators for all variations of p in [eps0, k0]
             % Assemble them directly into the H operator
+            % (eq. 123)
             H_eps0 = F';
             H_k0 = F' * dkdq_cross_x;
             H = [H_eps0, H_k0];
@@ -184,7 +135,8 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
             dkdq_cross_F2 = [zeros(3,3), cross(eye(3,3), repmat(F(:,2), 1, 3))];
             dkdq_cross_F3 = [zeros(3,3), cross(eye(3,3), repmat(F(:,3), 1, 3))];
    
-            % Compute the E,q^{0} operator following eq. 118 in (19
+            % Compute the E,q^{0} operator 
+            % (eq. 117, 118, 119)
             E_v_0_q = zeros(6,6);
 
             % Only fill the 3rd, 5th and 6th layers
@@ -197,6 +149,7 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
     
             for i = 1:nn
                 % Compute BN for all N=1:nn
+                % (eq. 88)
                 BN(:,i*3-2:i*3) = [ 
                     F(1,1)*ders(1,i)     F(2,1)*ders(1,i)      F(3,1)*ders(1,i);
                     F(1,2)*ders(2,i)     F(2,2)*ders(2,i)      F(3,2)*ders(2,i);
@@ -207,19 +160,23 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
     
     
                 % Compute BN_6_q for all N=1:nn & q=1:6
+                % (eq. 121)
                 BN_6_q(i*3-2:i*3, :) = ders(1,i) * deps0k0_dq - N(i) * dkdq_cross_F1;
                 BN_5_q(i*3-2:i*3, :) = ders(2,i) * deps0k0_dq - N(i) * dkdq_cross_F2;
                 BN_3_q(i*3-2:i*3, :) = -N(i) * (dkdq_cross_F3 + cross(repmat(k0, 1, 6), deps0k0_dq));
             end
     
             % Compute R_y_partial_all
+            % (eq. 114)
             R_y_partial_all = BN' * dtan * E_v_0_q + (BN_3_q * pk2(3) + BN_5_q * pk2(5) + BN_6_q * pk2(6));
-    
-            % Combine with S_reduced and integrate
-            stress_resultant = stress_resultant + fac * H' * S_red;
     
             % Integrate the sensitivities residual vector
             R_y_all(sctrB, :) = R_y_all(sctrB, :) + fac * R_y_partial_all;
+
+            % Update stress resultants by combining H with S_reduced and
+            % integrate
+            % (eq. 129)
+            stress_resultant = stress_resultant + fac * H' * S_red;
         end
     end
     
@@ -228,6 +185,7 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
     R_y_all_padded(1:ndofs, :) = R_y_all;
 
     % Solve u_q for q=1:6
+    % (eq. 122)
     uy_all = K \ (-R_y_all_padded);
 
     % Extract only sensitivity of displacement solution u
@@ -303,11 +261,11 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
             % (eq. 130, 123)
             H_eps0 = F';
             dkdq_cross_x = [0,x(3),-x(2); -x(3), 0, x(1); x(2), -x(1), 0];
-            deps0k0_dq = [eye(3,3), dkdq_cross_x];
             H_k0 = F' * dkdq_cross_x;
             H = [H_eps0, H_k0];
 
-            % Compute BN matrix entries (eq. 88)
+            % Compute BN matrix entries (Vectorized)
+            % (eq. 88)
             BN = zeros(6, nn*3);
 
             % Indices for blocks
@@ -368,11 +326,13 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
             EE_v = E_v_0_q + BN * uy_all(sctrB, :);
 
             % Determine local u_q and u_q_alpha
+            % (eq. 113)
             u_q = sum(N .* elY, 2);
             u_q_alpha1 = sum(ders(1, :) .* elY, 2);
             u_q_alpha2 = sum(ders(2, :) .* elY, 2);
 
-            % Assemble F_q following eq. 55
+            % Assemble F_q
+            % (eq. 55)
             k_cross_uq = cross(repmat(k0,1,1,6), u_q);
             F_q_imp = [u_q_alpha1, u_q_alpha2, k_cross_uq];
             F_q_exp = zeros(3,3,6);
@@ -381,7 +341,8 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
             F_q = F_q_imp + F_q_exp;
             F_q_T = permute(F_q, [2, 1, 3]);
 
-            % Compute a_p Term following eq. 13 in (1)
+            % Compute a_p Term
+            % (eq. 13)
             a_p = [eye(3,3), cross(eye(3,3), repmat(x, 1, 3))];
 
             % Compute the second derivative of h for all q=1:6 and p=1:6
@@ -391,7 +352,8 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
                 HH1(:, :, qqi) = F_q_T(:,:,qqi) * a_p;
             end
 
-            % Add second component of HH (eq. 140)
+            % Add second component of HH 
+            % (eq. 140)
             HH2 = zeros(3,6,6);
             for ppi = 4:6 % First 3 entries in dk0dq are 0 anyways
                 for qqi = 1:6
@@ -402,12 +364,12 @@ function [n0, m0, C0, uy_all] = beam_effects(geo, mesh, mat, eps0, k0, u, K)
             % Combine into HH expression
             HH = HH1 + HH2;
 
-            % Finally assemble into Beam Stiffness Components (eq. 141)
+            % Finally assemble into Beam Stiffness Components 
+            % (eq. 141)
             C0_partial_geo = reshape(pagemtimes(repmat(S_red', 1,1,6), HH), 6, 6);
             C0_partial_mat = H' * C_red' * EE_v;
             C0_partial = C0_partial_mat + C0_partial_geo;
             C0 = C0 + fac * C0_partial;
         end
     end
-
 end

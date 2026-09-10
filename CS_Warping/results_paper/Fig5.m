@@ -1,10 +1,10 @@
-% This script is used for Testing the equivalency of the PK2 Formulation of 
+% This script is used to test the equivalency of the PK2 Formulation
 % against the PK1 Formulation. It includes:
-%   - 3 Loadcases as possible test cases
-%   - 2 cross-sectional shapes 
-%   - Different Material Indicees
-%   - Results may be save and exported as a table
-%   - Visualization Options
+%   - 3 Load Cases as possible test cases
+%   - 2 cross-sectional shapes
+%   - Different Material Indices
+%   - Options to save and export results as a table
+%   - Visualization options
 % ----------------------------------------
 % Copyright (C) 2026 Tobias Henkels and Juan C. Alzate Cobo. 
 % 
@@ -16,7 +16,7 @@
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -43,8 +43,8 @@
 % The following options may be chosen to reproduce the figures 5a and 5b:
 % (The current preset corresponds to Fig 5a)
 %           | cs_type   | eps0_case    | k0_case    | complex_case
-%   Fig 5a  | "square"  | 0           | 0           | 1
-%   Fig 4b  | "square"  | 0            | 0          1
+%   Fig 5a  | "square"  | 0            | 0          | 1
+%   Fig 5b  | "square"  | 0            | 0          | 1
 
 
 
@@ -61,13 +61,13 @@ k0_case = 0;
 complex_case = 1;
 
 % Select the Cross-section
-%crossectional_type = "square";
-crossectional_type = "circle";
+crossectional_type = "square";
+%crossectional_type = "circle";
 
 % Select visualization options
 vis_beam_effects = 1;
-vis_beam_stiffnesses = 0;
-vis_simple_beam_stiffnesses = 0;
+vis_beam_stiffnesses = 1;
+vis_simple_beam_stiffnesses = 1;
 show_errors = 1;
 
 % Select if files should be generated
@@ -89,7 +89,7 @@ index_NH_pk2 = 110;  % Compressible Neo-Hooke with PK2
 
 indexes = [index_SVK_pk1, index_SVK_pk2, index_MR_pk1, index_MR_pk2, index_NH_pk1, index_NH_pk2];
 
-% Programm options
+% Program options
 append_older_dataset = 0;
 
 
@@ -103,7 +103,7 @@ if eps0_case == 1
 
     save_tables_eps0= 1;
     save_tables_k03 = 0;
-    x_axis_txt = 'Axial Strain \epsilon_{3}';
+    x_axis_txt = 'Axial Strain $\epsilon_{3}$';
 elseif k0_case == 1
     % Z-Axial Twist prescribed
     dir = 6;
@@ -114,7 +114,7 @@ elseif k0_case == 1
 
     save_tables_eps0= 0;
     save_tables_k03 = 1;
-    x_axis_txt = 'Axial Twist \kappa_{3}';
+    x_axis_txt = 'Axial Twist $\kappa_{3}$';
 elseif complex_case == 1
     % Multiaxial loading case
     % Make 'substep' Increments of loading from Null-Load to Max-Load
@@ -127,7 +127,7 @@ elseif complex_case == 1
     l = length(substep_range);
     loadcase = [eps0_max;k0_max] .* substep_range;
     
-    x_axis_txt = 'Loading Increment factor \lambda';
+    x_axis_txt = 'Loading Increment factor $\lambda$';
 end
 
 
@@ -135,10 +135,15 @@ end
 
 % Build geometrical model
 if crossectional_type == "square"
-    plate =  geo_square( [0,0], 1, 0);
+    cs_options = {};
+    cs_options.RefinementX = 9;
+    cs_options.RefinementY = 9;
+    cs_options.show_plot = 0;
+    plate = geo_square([0,0], 1, cs_options);
 elseif crossectional_type == "circle"
     cs_options = {};
     cs_options.Refinement = 3;
+    cs_options.show_plot = 0;
     plate = geo_circle_with_square( [0,0], 1, 0.6, cs_options);
 else
     error("No matching crossectional shape selected")
@@ -359,7 +364,7 @@ if vis_beam_effects == 1
     hold on;
     title(["Normal Beam Forces over ", x_axis_txt], 'interpreter', 'latex')
     xlabel(x_axis_txt, 'interpreter', 'latex')
-    ylabel("Normal Force in [kN]")
+    ylabel("Normal Force in [kN]", 'interpreter', 'latex')
     for index = 1:k
         if mod(index, 2) == 1 % PK1
             yy_pk1 = reshape(nl_data.n0(3,1,:,index), 1, []);
@@ -379,7 +384,7 @@ if vis_beam_effects == 1
     hold on;
     title(["Normalised Normal Beam Forces over ", x_axis_txt], 'interpreter', 'latex')
     xlabel(x_axis_txt, 'interpreter', 'latex')
-    ylabel("Normalised Normal Force in [%]")
+    ylabel("Normalised Normal Force in [%]", 'interpreter', 'latex')
     for index = 1:k
         if mod(index, 2) == 1 % PK1
             yy_pk1 = reshape(nl_data.n0(3,1,:,index), 1, []);
@@ -399,7 +404,7 @@ if vis_beam_effects == 1
     hold on;
     title(["Shear Beam Forces over ", x_axis_txt], 'interpreter', 'latex')
     xlabel(x_axis_txt, 'interpreter', 'latex')
-    ylabel("Shear Force in [kN]")
+    ylabel("Shear Force in [kN]", 'interpreter', 'latex')
     for index = 1:k
         if mod(index, 2) == 1 % PK1
             yy_pk1 = reshape(nl_data.n0(1,1,:,index), 1, []);
@@ -419,7 +424,7 @@ if vis_beam_effects == 1
     hold on;
     title(["Torsional Beam Moment over ", x_axis_txt], 'interpreter', 'latex')
     xlabel(x_axis_txt, 'interpreter', 'latex')
-    ylabel("Beam Moment in [Nm]")
+    ylabel("Beam Moment in [Nm]", 'interpreter', 'latex')
     for index = 1:k
         if mod(index, 2) == 1 % PK1
             yy_pk1 = reshape(nl_data.m0(3,1,:,index), 1, []);
@@ -439,7 +444,7 @@ if vis_beam_effects == 1
     hold on;
     title(["Bending Beam Moment over ", x_axis_txt], 'interpreter', 'latex')
     xlabel(x_axis_txt, 'interpreter', 'latex')
-    ylabel("Beam Moment in [Nm]")
+    ylabel("Beam Moment in [Nm]", 'interpreter', 'latex')
     for index = 1:k
         if mod(index, 2) == 1 % PK1
             yy_pk1 = reshape(nl_data.m0(1,1,:,index), 1, []);
@@ -463,7 +468,7 @@ if vis_simple_beam_stiffnesses == 1
     hold on;
     title(["Normal Beam Stiffness over ", x_axis_txt], 'interpreter', 'latex')
     xlabel(x_axis_txt, 'interpreter', 'latex')
-    ylabel("Beam Stiffness in $\frac{N}{mm^2}$", 'interpreter', 'latex')
+    ylabel("Axial Beam Stiffness in [kN]", 'interpreter', 'latex')
     for index = 1:k
         if mod(index, 2) == 1 % PK1
             yy_pk1 = reshape(nl_data.C0(3,3,:,index), 1, []);
@@ -496,7 +501,7 @@ if vis_beam_stiffnesses == 1
         t = tiledlayout(fig, 3,3);
         title(t, "Beam Stiffness Entry (" + fig_titles(fig_index) + " quadrant) over " + x_axis_txt, 'interpreter', 'latex')
         xlabel(t, x_axis_txt, 'interpreter', 'latex')
-        ylabel(t, "Beam Stiffness in $\frac{N}{mm^2}$", 'interpreter', 'latex')
+        ylabel(t, "Beam Stiffness in [kN]", 'interpreter', 'latex')
 
         for row = 1:3
             for col = 1:3

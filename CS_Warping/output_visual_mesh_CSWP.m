@@ -23,7 +23,7 @@ function vmesh = output_visual_mesh_CSWP( fout, mat, geo, mesh, u, step, current
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -155,8 +155,7 @@ for m = 1:num_meshes
         sctr = sub_mesh.elNodeCnt(e,:);     % element control points index
         exyz = sub_mesh.coords(sctr,:);  % element control points' coordinates
         nn = length(sctr);   % number of control points in the element
-        nn3 = nn*3;          % degree of freedom of control points %% Check the 3 out!!! replace for 2
-        %nn3 = nn*2;
+        nn3 = nn*3;          % degree of freedom of control points
         
         % Check if global globElNodeCnt should be used
         if use_gloElNodeCnt

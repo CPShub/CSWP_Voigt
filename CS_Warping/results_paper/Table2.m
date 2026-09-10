@@ -12,7 +12,7 @@
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -37,10 +37,16 @@
 % ------------------------------------------------------------------------
 
 % Build geometrical model
-plate =  geo_square( [0,0], 1, 0);
+
+cs_options = {};
+cs_options.RefinementX = 9;
+cs_options.RefinementY = 9;
+cs_options.show_plot = 0;
+plate = geo_square([0,0], 1, cs_options);
+
 mesh = build_iga_mesh( plate );
-eps0 = [0.02, 0.03, 0.1]';
-k0 = [0.01,0.02,0.02]';
+eps0 = [0.02, 0.03, 0.06]';
+k0 = [0.01,0.02,0.1]';
 
 % Store indicees for compared material models
 index_SVK_pk1 = 14; % Saint-Venant Kirchhoff with PK1

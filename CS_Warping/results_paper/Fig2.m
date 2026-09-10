@@ -11,7 +11,7 @@
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -38,10 +38,6 @@
 
 % Toggle to save the files directly into "output"
 save_file = 1;
-
-
-
-
 
 % O-Mesh Circle
 cs_options = {};
@@ -72,7 +68,6 @@ cs_options.RefinementX = 9;
 cs_options.RefinementY = 9;
 cs_options.show_plot = 1;
 
-figure
 geo_square([0,0],1,cs_options)
 axis off
 xlim([-0.6, 0.6])

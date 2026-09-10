@@ -12,7 +12,7 @@
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -55,7 +55,7 @@ if recompute
     k02 = [0, 0, 0]';
     
     
-    % Define crossection and material
+    % Define cross-section and material
     cs_size = 1; % Unit Square
     square = geo_square([0, 0], cs_size, 0);
     mesh = build_iga_mesh(square);
@@ -86,7 +86,7 @@ options.show_ticks = 1;
 options.show_title = 1;
 options.show_coords = 1;
 options.show_cb_title = 1;
-options.given_title = "Look, a title!";
+options.given_title = "Single Visualization!";
 plot_color_flat(flag_flatcolor, fname1, options);
 
 
@@ -102,15 +102,18 @@ options.show_title = 1;
 options.show_coords = {};
 options.show_coords.flag = 1;
 options.show_coords.center = cs_coords_center;
-options.given_title = "Look, a title!";
+options.given_title = "Combined Visualization!";
 options.A_text.pos = cs_A_text_pos;
 options.A_text.text = "File 1";
 options.A_text.font = 28;
 options.A_text.color = "black";
+options.A_text.pos = [0.43, -0.02];
+
 options.B_text.pos = cs_B_text_pos;
 options.B_text.text = "File 2";
 options.B_text.font = 28;
 options.B_text.color = "black";
+options.B_text.pos = [-0.77, -0.02];
 options.loading_case = "u3";
 options.cb_decimals = 3;
 

@@ -22,7 +22,7 @@ function vmesh = plot_color_flat(flag, filename, options)
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -122,46 +122,40 @@ pause(1.0);
 
 % Draw the Deformed Configuration (colored) for each load step
 for j = 2:length(vmesh.vertices)
-    face = cell2mat(vmesh.face(j));
-    maxnum = max(max(face));
-    vertices = cell2mat(vmesh.vertices(j));
-    trivertex = vertices(1:maxnum,:);
-    displacement = cell2mat(vmesh.displacement(j));
-    stress = cell2mat(vmesh.stress(j));    
-    
+    vertices = vmesh.vertices{j};
+    displacement = vmesh.displacement{j};
+    stress = vmesh.stress{j};
     % flag - color map: 
     %   1-U1, 2-U2, 3-U3, 
     %   4-U magnitude, 
     %   5-S11, 6-S22, 7-S12, 
     %   8-mises
-    len = length(trivertex);
     if flag == 1
-        cdata = displacement(1:maxnum,1);
+        cdata = displacement(:,1);
     elseif flag == 2
-        cdata = displacement(1:maxnum,2);
+        cdata = displacement(:,2);
     elseif flag == 3
-        cdata = displacement(1:maxnum,3);
+        cdata = displacement(:,3);
     elseif flag == 4
-        cdata = sqrt(sum(displacement(1:maxnum, :).^2, 2));
+        cdata = sqrt(sum(displacement.^2, 2));
     elseif flag == 5
-        cdata = stress(1:maxnum,1);
+        cdata = stress(:,1);
     elseif flag == 6
-        cdata = stress(1:maxnum,2);
+        cdata = stress(:,2);
     elseif flag == 7
-        cdata = stress(1:maxnum,3);
+        cdata = stress(:,3);
     elseif flag == 8
-        cdata = von_mises( stress(1:maxnum,:) );
+        cdata = von_mises( stress );
     end
 
-    % Limit the cdata to [-limi, limi] range
-    %cdata = min(max(cdata,-limi),limi);
+    % triangulate vertices for visualization
+    tri = delaunay(vertices(:, 1), vertices(:, 2));
 
+    len = length(vertices);
 
     % Add the visualized data
-    p = patch(trivertex(:, 1), trivertex(:, 2), rand(len, 1));
-    set(p, 'Faces', face);
-    set(p,'FaceColor','interp','FaceVertexCData',cdata);
-    set(p,'EdgeColor','none');
+    p = trisurf(tri, vertices(:, 1), vertices(:, 2), zeros(len, 1), cdata, 'FaceColor', 'interp', 'EdgeColor', 'none');
+    view(2);
 
     % Add the coordinate system
     if show_coords

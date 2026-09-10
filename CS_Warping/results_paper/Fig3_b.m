@@ -11,7 +11,7 @@
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -56,7 +56,13 @@ visualize_validation = 1;
 
 
 % Build geometrical model
-plate =  geo_square( [0,0], 2, 0);
+cs_options = {};
+cs_options.RefinementX = 9;
+cs_options.RefinementY = 9;
+cs_options.show_plot = 0;
+
+plate = geo_square( [0,0], 2, cs_options);
+%plate =  geo_square( [0,0], 2, 0);
 
 % Enforce displacement boundary conditions 
 dbc = [];        % dbc = [node index, node dof, prescribed displacement]
@@ -99,12 +105,8 @@ k = length(indexes); % Number of PK Formulations to compute
 nl_data.compute_time = zeros(l, k);
 nl_data.k0 = k0s;
 nl_data.eps0 = zeros(3,1,l);
-nl_data.coords_def = zeros(3,64,l, k);
 nl_data.n0 = zeros(3,1,l, k);
 nl_data.m0 = zeros(3,1,l, k);
-nl_data.C0 = zeros(6,6,l, k);
-nl_data.u = zeros(198, l, k);
-nl_data.k = zeros(198, 198, l, k);
 
 
 
@@ -113,10 +115,6 @@ nl_data.k = zeros(198, 198, l, k);
 %   Material Model
 %   PK1 / PK2 Formulation
 for i = 1:l
-    eps0_i = eps0s(d, i);
-    k0_i = k0s(d, i);
-
-    % expect onset of "flow" at 1.95 (???)
     eps0 = eps0s(:, i);
     k0 = k0s(:, i);
     
@@ -150,18 +148,14 @@ for i = 1:l
         fclose(fout);
 
         % Store the data
-        nl_data.coords_def(:, :, l_index, j) = nl_returns.coords_def';
         nl_data.n0(:, :, l_index, j) = nl_returns.n0;
         nl_data.m0(:, :, l_index, j) = nl_returns.m0;
-        nl_data.C0(:, :, l_index, j) = nl_returns.C0;
-        nl_data.u(:, l_index, j) = nl_returns.u;
-        nl_data.k(:, :, l_index, j) = nl_returns.k;
     end
 end
 
 % Export generated Data to .csv files
 if export_to_csv == 1
-    xx = reshape(nl_data.k0(d,1,:),1,[]);
+    xx = nl_data.k0(d,:);
 
     % Data extract for torsional Moment
     m3_SVK_pk1 = reshape(nl_data.m0(3,1,:,1), [], 1);
@@ -184,9 +178,9 @@ if visualize_validation
     set(beam_figure_axial,'name','Beam Forces Normal Z');
     grid on;
     hold on;
-    ylabel("Torsional Moment in [Nm]")
+    ylabel("Torsional Moment in [kNmm]", 'interpreter', 'latex');
     xx = reshape(nl_data.k0(3,:),1,[]);
-    xlabel("K03")
+    xlabel("$\kappa_3$", 'interpreter', 'latex');
     for index = 1:k
         if mod(index, 2) == 1 % PK1
             yy_pk1 = reshape(nl_data.m0(3,1,:,index), 1, []);

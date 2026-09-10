@@ -18,7 +18,7 @@ function [trimA, trimB] = trim_patch_by_line(vmesh, ptA, ptB)
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -56,13 +56,7 @@ trimB = trimA;
 
 for step = 1:numSteps
     % sub-select only the first num1*num2 points WITHOUT the kntcrv-points
-    max_idx = size(vmesh.vertices{step},1) - size(vmesh.linmesh, 1);
     v_orig = vmesh.vertices{step};
-    
-    v_orig_mesh = v_orig(1:max_idx, :);
-    v_orig_kntcrv = v_orig(max_idx+1:end, :);
-    
-    f_orig = vmesh.face{step};      % Related to only the first 1:max_idx vertices
     
     disp_orig = vmesh.displacement{step};
     stress_orig = vmesh.stress{step};
@@ -90,11 +84,5 @@ for step = 1:numSteps
     
     trimA.strain{step} = strain_orig(flagsA, :);
     trimB.strain{step} = strain_orig(flagsB, :);
-
-    %maskA = all(flagsA(f_orig), 2);
-    %maskB = all(flagsB(f_orig), 2);
-
-    %trimA.face{step} = f_orig(maskA, :);
-    %trimB.face{step} = f_orig(maskB, :);
 end
 end
