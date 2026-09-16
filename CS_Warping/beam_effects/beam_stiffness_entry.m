@@ -29,7 +29,7 @@ function [C0_entry] = beam_stiffness_entry(geo, mesh, mat, eps0, k0, u, ip, iq, 
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -138,9 +138,7 @@ for el = 1:mesh.nElems                % loop over elements
 
         % Compute y and derivates at gauss point
         % Equation 4.42
-        yp_ipt = sum(N.*elYp', 2);
         yq_ipt = sum(N.*elYq', 2);
-        dalpha_yp_ipt = elYp' * ders3D';
         dalpha_yq_ipt = elYq' * ders3D';
 
         % Determine derivative of F and q (Equation 4.40)

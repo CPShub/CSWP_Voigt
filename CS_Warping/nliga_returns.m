@@ -28,7 +28,7 @@ function [nliga_return] = nliga_returns( eltype, geo, mesh, mat, dbc, tbc, fout,
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -97,7 +97,7 @@ cnit = [];            % record the iterative steps
 if ((mat.index >= 10 && mat.index < 20) || (mat.index >= 110 && mat.index < 120))            
     % % output initial undeformed geometries
     if eltype ==30 % CSWP-Element
-        output_visual_mesh_CSWP( fout, mat, geo, mesh, u, step, curtime );
+        output_visual_mesh_CSWP_onQP( fout, mat, geo, mesh, u, step, curtime, eps0, k0 );
     elseif mesh.dim == 2 % Plane Element
         output_visual_mesh2d( fout, mat, geo, mesh, u, step, curtime );
     elseif mesh.dim == 3 % Block Element
@@ -126,19 +126,15 @@ while curtime ~= 1    % get to the end
         if eltype == 30 
             if mat.index >= 10 && mat.index < 20
                 % Elastic CSWP with PK1
-                [ k, r ] = globalstiffness_CSWP( eltype, geo, mesh, mat, u, curtime,eps0,k0 );
+                [ k, r ] = globalstiffness_CSWP_PK1_Arora( eltype, geo, mesh, mat, u, curtime,eps0,k0 );
             elseif mat.index >= 110 && mat.index < 120
                 % Elastic CSWP with PK2
                 [ k, r ] = globalstiffness_CSWP_PK2( eltype, geo, mesh, mat, u , curtime,eps0,k0);
             end
-        % belongs to hyperelastic materials
-        elseif ( mat.index >= 10 && mat.index < 20 )            
-            % ATTENTION: Depricated
-            [ k, r ] = globalstiffness_hyper( eltype, geo, mesh, mat, u);
         % belongs to plastic materials
         elseif ( mat.index >= 20 && mat.index < 40 )        
             % ATTENTION: Depricated
-            [ k, r ] = globalstiffness_plastic( D, eltype, geo, mesh, mat, iu );
+            error("Unkown material index")
         end
         if eltype == 30
             f = zeros(ndofs+6,1);         % define external force
@@ -193,9 +189,8 @@ while curtime ~= 1    % get to the end
         % belongs to hyperelastic materials
         if ( mat.index >= 10 && mat.index < 20 ) || ( mat.index >= 110 && mat.index < 120 )            
             % output visualized mesh file with 'filename'
-            %if mesh.dim == 2 && eltype == 30
             if eltype == 30
-                output_visual_mesh_CSWP( fout, mat, geo, mesh, u, step, curtime );
+                output_visual_mesh_CSWP_onQP( fout, mat, geo, mesh, u, step, curtime, eps0, k0 );
             elseif mesh.dim == 2 
                 output_visual_mesh2d( fout, mat, geo, mesh, u, step, curtime );
             elseif mesh.dim == 3
@@ -209,7 +204,6 @@ while curtime ~= 1    % get to the end
     else                           % not converged
         if reit <= maxreit         % refine time interval and continue iterating
             curtime = curtime - timeInterval;   % recover current time step
-            init_vina(ngp) ;                    % Reset the memory-variables ?
             timeInterval = timeInterval/4;      % refine time interval
             reit = reit+1;         % increase reduction index
             u = cu;                % recover current displacement from last converged displacement
@@ -219,13 +213,20 @@ while curtime ~= 1    % get to the end
     end
 end
 
-% Determination of Beam Stiffness
-C0 = beam_stiffness(geo, mesh, mat, eps0, k0, u, k);
 
-    
-% Determination of Beam Forces
-[n0, m0] = beam_forces(geo, mesh, mat, eps0, k0, u);
+if (mat.index >= 10 && mat.index < 20)
+    % Old Approach as fall-back
 
+    % Determination of Beam Stiffness
+    C0 = beam_stiffness(geo, mesh, mat, eps0, k0, u, k);
+        
+    % Determination of Beam Forces
+    [n0, m0] = beam_forces(geo, mesh, mat, eps0, k0, u);
+
+elseif (mat.index >= 110 && mat.index < 120)
+    % Novel determination of beam forces
+    [n0, m0, C0, ~] = beam_effects(geo, mesh, mat, eps0, k0, u, k);
+end
 
 % Determine the Deformed configuration
 u_disp = u(1:end-6);

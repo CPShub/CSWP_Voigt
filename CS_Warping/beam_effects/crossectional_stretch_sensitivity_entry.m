@@ -2,7 +2,7 @@ function [yi] = crossectional_stretch_sensitivity_entry(geo, mesh, mat, eps0, k0
 % Compute the sensitivity of cross-sectional deformation u in relation to the
 % strain prescriptor index (iq)
 %
-% Equations reference citation (1) as well as (3): "Numerische Methoden zur 
+% Equations reference citation (1) as well as "Numerische Methoden zur 
 % Modellierung elastoplastischer Balken und ihre Anwendung auf 
 % periodische Gitterstrukturen", PhD Thesis by L. Herrnböck
 %
@@ -28,7 +28,7 @@ function [yi] = crossectional_stretch_sensitivity_entry(geo, mesh, mat, eps0, k0
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -53,7 +53,7 @@ function [yi] = crossectional_stretch_sensitivity_entry(geo, mesh, mat, eps0, k0
 % ------------------------------------------------------------------------
 
 
-% Implementation following Herrnboeck Equation 4.46
+% Implementation following Equation 4.46
 
 dof = 3;
 ndofs = dof * mesh.nCpts;      % total dofs
@@ -72,7 +72,7 @@ R_y = zeros(ndofs, 1);
 e = eye(3);
 
 
-% Assemlby of the R_y vector
+% Assembly of the R_y vector
 count = 0;
 for el = 1:mesh.nElems                % loop over elements
     sctr = mesh.elNodeCnt(el,:);       % element control points index
@@ -161,13 +161,12 @@ for el = 1:mesh.nElems                % loop over elements
             EQ = to_voigt(0.5 * (F' * dF_dq + dF_dq' * F), "strain");
  
             for i = 1:nn  %loop over all NI --> Ry_I
-                % See Eq. 85 in (1)
+                % (eq. 88, 122)
                 col_3 = -N(i) * (cross(dk0_dq, F(:, 3)) + cross(k0, term_a));
                 col_5 = ders(2, i) * term_a - N(i) * cross(dk0_dq, F(:, 2));
                 col_6 = ders(1, i) * term_a - N(i) * cross(dk0_dq, F(:, 1));
                 BNq(i*3-2:i*3, :) = [zeros(3, 1),zeros(3, 1),col_3,zeros(3, 1),col_5,col_6];
 
-                % Corresponds to Eq. 52 in (1)
                 BN(:,i*3-2:i*3) = [ F(1,1)*ders(1,i)     F(2,1)*ders(1,i)      F(3,1)*ders(1,i);
                     F(1,2)*ders(2,i)     F(2,2)*ders(2,i)      F(3,2)*ders(2,i);
                     N(i)*(k0(3)*F(2,3)-k0(2)*F(3,3))    N(i)*(k0(1)*F(3,3)-k0(3)*F(1,3))       N(i)*(k0(2)*F(1,3)-k0(1)*F(2,3)) ;
@@ -176,7 +175,7 @@ for el = 1:mesh.nElems                % loop over elements
                     (F(1,3)*ders(1,i) + N(i)*(k0(3)*F(2,1)-k0(2)*F(3,1)))  (F(2,3)*ders(1,i) + N(i)*(k0(1)*F(3,1)-k0(3)*F(1,1)))   (F(3,3)*ders(1,i) + N(i)*(k0(2)*F(1,1)-k0(1)*F(2,1))) ];
 
             end
-            % See Eq. 77 in (1)
+            % See Eq. 77
             term1 = dtan * EQ;
             term2 = BNq * pk2;
 

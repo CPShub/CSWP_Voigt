@@ -23,7 +23,7 @@
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -49,14 +49,14 @@
 
 % The following options may be chosen to reproduce the figures 4a and 4b:
 % (The current preset corresponds to Fig 4a)
-%           | cs_type   | loading_case      | display_type
-%   Fig 4a  | "square"  | "full"            | "u3"
-%   Fig 4b  | "circle"  | "full"            | "u3"
+%           | cs_type   | loading_case      | display_type   | vertical_div
+%   Fig 4a  | "square"  | "full"            | "u3"           | 1
+%   Fig 4b  | "circle"  | "full"            | "u3"           | 1
 
-%   Fig 6a  | "square"  | "simple"          | "u3"
-%   Fig 6b  | "circle"  | "simple"          | "u3"
-%   Fig 6c  | "square"  | "simple"          | "vm"
-%   Fig 6d  | "circle"  | "simple"          | "vm"
+%   Fig 6a  | "square"  | "simple"          | "u3"           | 0
+%   Fig 6b  | "circle"  | "simple"          | "u3"           | 0
+%   Fig 6c  | "square"  | "simple"          | "vm"           | 0
+%   Fig 6d  | "circle"  | "simple"          | "vm"           | 0
 
 
 
@@ -67,7 +67,6 @@ use_vertical_divide = 1;
 % Select cross-section, loading case and visualized data
 %cs_type = "circle";
 cs_type = "square";
-%cs_type = "circle_square";
 
 loading_case = "full"; % Multi-Axial Loading case
 %loading_case = "simple";% Uni-Axial X-Shear
@@ -76,8 +75,8 @@ loading_case = "full"; % Multi-Axial Loading case
 display_type = "u3";    % u3 displacement component
 %display_type = "vm";   % von-Mises Stress
 
-recompute_files = 0;    % display_type may be changes without recomputing
-save_file = 0;  
+recompute_files = 1;    % display_type may be changed without recomputing
+save_file = 1;  
 
 
 %%
@@ -99,14 +98,16 @@ end
 cs_coords_center = [-1, -1];
 
 % Cross-Section
-if cs_type == "circle"
-    plate = geo_circle( [0, 0], 1);
-    savefile_cs = '_Circle.jpg';
-elseif cs_type == "square"
-    plate = geo_square( [0,0], 1, 0);
+if cs_type == "square"
+    cs_options = {};
+    cs_options.RefinementX = 9;
+    cs_options.RefinementY = 9;
+    plate = geo_square( [0,0], 1, cs_options);
     savefile_cs = '_Square.jpg';
-elseif cs_type == "circle_square"
-    plate = geo_circle_with_square( [0,0], 1, 0.6);
+elseif cs_type == "circle"
+    cs_options = {};
+    cs_options.Refinement = 3;
+    plate = geo_circle_with_square( [0,0], 1, 0.6, cs_options);
     savefile_cs = "_CircleSquare.jpg";
 end
 
@@ -144,22 +145,18 @@ filenames = ['ANALYSIS_DiagonalFlatColor_pk1';'ANALYSIS_DiagonalFlatColor_pk2'];
 options.show_ticks = 0;
 options.show_title = 1;
 options.show_coords = {};
-if cs_type == "circle"
-    options.show_coords.flag = 0;
-else
-    options.show_coords.flag = 0;
-end
+options.show_coords.flag = 0;
 options.show_coords.center = cs_coords_center;
-options.given_title = "";%title_;
+options.given_title = "";
 options.fontsize = 24;
 options.A_text.pos = cs_A_text_pos;
 options.A_text.text = "PK1";
 options.A_text.font = 28;
-options.A_text.color = "black"; %"white";
+options.A_text.color = "black";
 options.B_text.pos = cs_B_text_pos;
 options.B_text.text = "PK2";
 options.B_text.font = 28;
-options.B_text.color = "black";%"white";
+options.B_text.color = "black";
 options.loading_case = loading_case;
 
 if display_type == "vm"
@@ -193,30 +190,21 @@ fnameB = [filenames(2, :), '.msh'];
 
 
 %%
-
-dbc = [];        % dbc = [node index, node dof, prescribed displacement]
-tbc = [];
-tol = 1e-8;
-dof = 3;
 eltype = 30;
 
 index_SVK_pk1 = 14; % Saint-Venant Kirchhoff with PK1
 index_SVK_pk2 = 114; % Saint-Venant Kirchhoff with PK2
 
 indexes = [index_SVK_pk1, index_SVK_pk2];
-titles = ["SVK (PK1)", "SVK (PK2)", ...
-    "Mooney-Rivlin (PK1)", "Mooney-Rivlin (PK2)", ...
-    "Neo-Hook (PK1)", "Neo-Hook (PK2)"];
-colors = ["blue", "blue", ...
-    "green", "green", ...
-    "red", "red"];
-shapes = ["square", "square", "^", "^", "o", "o"];
-
 
 if recompute_files == 1
     for j = 1:2
-        mesh = build_iga_mesh( plate );
-        curve = extract_iga_boundary(mesh);
+        if cs_type == "circle"
+            % execute custom multi-mesh assembly
+            mesh = build_omesh(plate);
+        else
+            mesh = build_iga_mesh( plate );
+        end
         
         % Retrieve material properties
         mat = default_mat();
@@ -237,7 +225,7 @@ end
 plot_color_flat_combined(display_flag, fnameA, fnameB, options);
 
 if save_file == 1
-    savefile_name = join(['RESULT_' savefile_loading_case savefile_display_type savefile_cs]);
+    savefile_name = join(['RESULT_', savefile_loading_case, savefile_display_type, savefile_cs], "");
     savefile_path = fullfile(pwd, 'output', savefile_name)
     exportgraphics(gcf,savefile_path,'Resolution',300);
 end

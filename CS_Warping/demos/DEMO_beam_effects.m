@@ -1,5 +1,5 @@
 %% FOR TESTING AND DEMONSTRATION PURPOSES
-% This Demonstration Environment showcases the computation of the beam 
+% This demonstration environment showcases the computation of the beam 
 % forces and beam stiffnesses
 % ----------------------------------------
 % Copyright (C) 2026 Tobias Henkels and Juan C. Alzate Cobo. 
@@ -12,7 +12,7 @@
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -63,16 +63,13 @@ nl_return = nliga_returns(eltype, geo, mesh, mat, dbc, tbc, fout, eps0, k0);
 u = nl_return.u; % Solution displacement vector
 k = nl_return.k; % Solution stiffness matrix
 
-% 1. Compute the Beam Forces acting on the cross-section
-[forces, moments] = beam_forces(geo, mesh, mat, eps0, k0, u);
+% Compute the Beam Forces and Moments acting on the cross-section as well 
+% as the deformation solution sensitivities u,q and the Beam Stiffness Matrix 
+[forces, moments, stiffness, sensitivities] = beam_effects(geo, mesh, mat, eps0, k0, u, k);
+
 disp("Forces in [x,y,z]: ")
 disp(forces);
 disp("Moments in [x,y,z]: ")
 disp(moments);
-
-
-% 2. Compute the Beam Stiffness Matrix (Sensitivity of Forces and Moments in relation
-% to eps0 and k0)
-[C0] = beam_stiffness(geo, mesh, mat, eps0, k0, u, k);
 disp("Beam Stiffness Matrix [6,6]: ")
-disp(C0);
+disp(stiffness);

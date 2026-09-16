@@ -2,7 +2,7 @@ function [y] = crossectional_stretch_sensitivity(geo, mesh, mat, eps0, k0, u, K)
 % Compute the sensitivity of cross-sectional deformation u in relation to the
 % 6 strain prescriptors
 %
-% Equations reference citation (3): "Numerische Methoden zur 
+% Equations reference: "Numerische Methoden zur 
 % Modellierung elastoplastischer Balken und ihre Anwendung auf 
 % periodische Gitterstrukturen", PhD Thesis by L. Herrnböck
 %
@@ -27,7 +27,7 @@ function [y] = crossectional_stretch_sensitivity(geo, mesh, mat, eps0, k0, u, K)
 % If you use this code for your research, please cite: 
 % 
 % (1) J.C. Alzate Cobo, T. Henkels and O. Weeger, "The cross-sectional 
-% warping problem for hyperelastic beams: An efficient formulation in 
+% warping problem for hyperelastic beams: A compact formulation in 
 % Voigt notation", DOI: 10.48550/arXiv.2604.12886 
 % (2) X. Du, G. Zhao, W. Wang, M. Guo, R. Zhang, J. Yang, "NLIGA: A MATLAB 
 % framework for nonlinear isogeometric analysis", Computer Aided 
@@ -51,7 +51,7 @@ function [y] = crossectional_stretch_sensitivity(geo, mesh, mat, eps0, k0, u, K)
 % Technische Universität Darmstadt, Germany 
 % ------------------------------------------------------------------------
 
-% Solver for crossectional stretch senstivity following (3) 
+% Solver for cross-sectional stretch sensivity following
 % Equations 4.43 to 4.46
 
 dof = 3;
@@ -60,8 +60,8 @@ ndofs = dof * mesh.nCpts;      % total dofs
 % Preallocate space;
 y = zeros(ndofs, 6);
 
-% Solve for crossectional stretch sensitivity for each entry q in p
-for iq = 1:6 % parfor?
+% Solve for cross-sectional stretch sensitivity for each entry q in p
+for iq = 1:6
     [yi] = crossectional_stretch_sensitivity_entry(geo, mesh, mat, eps0, k0, u, K, iq);
 
     y(:, iq) = yi;
